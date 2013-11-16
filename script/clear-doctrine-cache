@@ -1,0 +1,7 @@
+#!/bin/bash
+DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+php $DIR/../vendor/bin/doctrine-module orm:clear-cache:metadata
+php $DIR/../vendor/bin/doctrine-module orm:clear-cache:result
+php $DIR/../vendor/bin/doctrine-module orm:clear-cache:query
+rm -rf $DIR/../library/Guestops/Entity/Proxy/*

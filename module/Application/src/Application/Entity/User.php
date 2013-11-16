@@ -1,51 +1,87 @@
 <?php
 
 namespace Application\Entity;
+
 use Doctrine\ORM\Mapping as ORM;
 
-/** @ORM\Entity */
-class User{
+/**
+ * User
+ *
+ * @ORM\Entity
+ */
+class User
+{
     /**
-    * @ORM\Id
-    * @ORM\GeneratedValue(strategy="AUTO")
-    * @ORM\Column(type="integer")
-    */
-    protected $id;
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="AUTO")
+     * @ORM\Column(type="integer")
+     */
+    private $id;
 
-    /** @ORM\Column(type="string") */
-    protected $lastName;
+    /**
+     * @ORM\Column(type="string")
+     */
+    private $lastName;
 
-    /** @ORM\Column(type="string") */
-    protected $firstName;
+    /**
+     * @ORM\Column(type="string")
+     */
+    private $firstName;
 
-    // getters/setters
+
+    /**
+     * Get id
+     *
+     * @return integer 
+     */
     public function getId()
     {
         return $this->id;
     }
 
-    public function setId($id)
+    /**
+     * Set lastName
+     *
+     * @param string $lastName
+     * @return User
+     */
+    public function setLastName($lastName)
     {
-        $this->id = $id;
+        $this->lastName = $lastName;
+
+        return $this;
     }
 
-    public function getFirstName()
-    {
-        return $this->firstName;
-    }
-
-    public function setFirstName($firstName)
-    {
-        $this->firstName = $firstName;
-    }
-
+    /**
+     * Get lastName
+     *
+     * @return string 
+     */
     public function getLastName()
     {
         return $this->lastName;
     }
 
-    public function setLastName($lastName)
+    /**
+     * Set firstName
+     *
+     * @param string $firstName
+     * @return User
+     */
+    public function setFirstName($firstName)
     {
-        $this->lastName = $lastName;
+        $this->firstName = $firstName;
+
+        return $this;
     }
-} 
+
+    /**
+     * Get firstName
+     *
+     * @return string 
+     */
+    public function getFirstName()
+    {
+        return $this->firstName;
+    }
+}

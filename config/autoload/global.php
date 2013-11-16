@@ -12,5 +12,7 @@
  */
 
 return array(
-    // ...
+    'bitcoind' => array(
+        'server' => 'http://bitcoinrpc:4mWvdrWsVHJh2tufUfvJqUNBfQkqe2nKTD7gJhU9mjBF@127.0.0.1:8332/'
+    )
 );

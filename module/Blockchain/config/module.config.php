@@ -1,12 +1,4 @@
 <?php
-/**
- * Zend Framework (http://framework.zend.com/)
- *
- * @link      http://github.com/zendframework/ZendSkeletonApplication for the canonical source repository
- * @copyright Copyright (c) 2005-2013 Zend Technologies USA Inc. (http://www.zend.com)
- * @license   http://framework.zend.com/license/new-bsd New BSD License
- */
-
 return array(
     'router' => array(
         'routes' => array(
@@ -15,7 +7,7 @@ return array(
                 'options' => array(
                     'route'    => '/',
                     'defaults' => array(
-                        'controller' => 'Application\Controller\Index',
+                        'controller' => 'Blockchain\Controller\Index',
                         'action'     => 'index',
                     ),
                 ),
@@ -23,13 +15,13 @@ return array(
             // The following is a route to simplify getting started creating
             // new controllers and actions without needing to create a new
             // module. Simply drop new controllers in, and you can access them
-            // using the path /application/:controller/:action
-            'application' => array(
+            // using the path /blockchain/:controller/:action
+            'blockchain' => array(
                 'type'    => 'Literal',
                 'options' => array(
-                    'route'    => '/application',
+                    'route'    => '/blockchain',
                     'defaults' => array(
-                        '__NAMESPACE__' => 'Application\Controller',
+                        '__NAMESPACE__' => 'Blockchain\Controller',
                         'controller'    => 'Index',
                         'action'        => 'index',
                     ),
@@ -73,7 +65,7 @@ return array(
     ),
     'controllers' => array(
         'invokables' => array(
-            'Application\Controller\Index' => 'Application\Controller\IndexController'
+            'Blockchain\Controller\Index' => 'Blockchain\Controller\IndexController'
         ),
     ),
     'view_manager' => array(
@@ -83,8 +75,8 @@ return array(
         'not_found_template'       => 'error/404',
         'exception_template'       => 'error/index',
         'template_map' => array(
-            'layout/layout'           => __DIR__ . '/../view/layout/layout.phtml',
-            'application/index/index' => __DIR__ . '/../view/application/index/index.phtml',
+            'layout/layout'           => __DIR__ . '/../../Application/view/layout/layout.phtml',
+            'blockchain/index/index' => __DIR__ . '/../view/blockchain/index/index.phtml',
             'error/404'               => __DIR__ . '/../view/error/404.phtml',
             'error/index'             => __DIR__ . '/../view/error/index.phtml',
         ),
@@ -95,22 +87,32 @@ return array(
     'console' => array(
         'router' => array(
             'routes' => array(
+                'load-blocks' => array(
+                    'type' => 'simple',
+                    'options' => array(
+                        'route'    => 'load-blocks',
+                        'defaults' => array(
+                            'controller' => 'Blockchain\Controller\Index',
+                            'action'     => 'load',
+                        )
+                    )
+                )
             )
         )
     ),
     'doctrine' => array(
         'driver' => array(
-            'application_entities' => array(
-              'class' =>'Doctrine\ORM\Mapping\Driver\AnnotationDriver',
-              'cache' => 'array',
-              'paths' => array(__DIR__ . '/../src/Application/Entity')
+            'Blockchain_driver' => array(
+                'class' =>'Doctrine\ORM\Mapping\Driver\AnnotationDriver',
+                'cache' => 'array',
+                'paths' => array(__DIR__ . '/../src/Blockchain/Entity')
             ),
 
             'orm_default' => array(
                 'drivers' => array(
-                    'Application\Entity' => 'application_entities'
+                    'Blockchain\Entity' => 'Blockchain_driver'
                 )
             )
         )
-    ),
+    )
 );
