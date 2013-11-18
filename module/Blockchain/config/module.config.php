@@ -6,10 +6,14 @@ return array(
                 'type' => 'Zend\Mvc\Router\Http\Literal',
                 'options' => array(
                     'route'    => '/',
+                    /*
+                    // This will override the application default, so add
+                    // only if you want to make this the home page
                     'defaults' => array(
                         'controller' => 'Blockchain\Controller\Index',
                         'action'     => 'index',
                     ),
+                    */
                 ),
             ),
             // The following is a route to simplify getting started creating

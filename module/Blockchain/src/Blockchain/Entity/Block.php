@@ -19,7 +19,7 @@ class Block
     private $id;
 
     /**
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="string", length=64)
      */
     private $hash;
 
@@ -39,7 +39,7 @@ class Block
     private $version;
 
     /**
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="string", length=64)
      */
     private $merkleroot;
 
@@ -54,7 +54,7 @@ class Block
     private $nonce;
 
     /**
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="string", length=8)
      */
     private $bits;
 
@@ -64,12 +64,12 @@ class Block
     private $difficulty;
 
     /**
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="string", length=64, nullable=true)
      */
     private $previousblockhash;
 
     /**
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="string", length=64, nullable=true)
      */
     private $nextblockhash;
 
