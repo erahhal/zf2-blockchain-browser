@@ -93,33 +93,13 @@ return array(
     'console' => array(
         'router' => array(
             'routes' => array(
-                'load-blockchain' => array(
+                'import-blockchain' => array(
                     'type' => 'simple',
                     'options' => array(
-                        'route'    => 'load-blockchain',
+                        'route'    => 'import-blockchain',
                         'defaults' => array(
                             'controller' => 'Blockchain\Controller\Index',
-                            'action'     => 'load',
-                        )
-                    )
-                ),
-                'load-blocks' => array(
-                    'type' => 'simple',
-                    'options' => array(
-                        'route'    => 'load-blocks',
-                        'defaults' => array(
-                            'controller' => 'Blockchain\Controller\Block',
-                            'action'     => 'load',
-                        )
-                    )
-                ),
-                'load-transactions' => array(
-                    'type' => 'simple',
-                    'options' => array(
-                        'route'    => 'load-transactions',
-                        'defaults' => array(
-                            'controller' => 'Blockchain\Controller\Transaction',
-                            'action'     => 'load',
+                            'action'     => 'import',
                         )
                     )
                 )

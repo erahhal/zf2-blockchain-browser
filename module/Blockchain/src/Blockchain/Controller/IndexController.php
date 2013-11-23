@@ -9,11 +9,11 @@ class IndexController extends AbstractActionController
 {
 
     public function indexAction()
-    {
+    {/*{{{*/
         return new ViewModel();
-    }
+    }/*}}}*/
 
-    public function loadAction()
+    public function importAction()
     {/*{{{*/
         echo "
 Todo:
