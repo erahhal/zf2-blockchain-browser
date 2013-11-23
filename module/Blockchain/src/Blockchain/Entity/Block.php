@@ -8,6 +8,17 @@ use Doctrine\ORM\Mapping as ORM;
  * Block
  *
  * @ORM\Entity
+ * @ORM\Table(
+       name="Block",
+       uniqueConstraints={
+           @ORM\UniqueConstraint(name="blockhash_unique",columns={"blockhash"})
+       },
+       indexes={
+           @ORM\Index(name="blockhash_idx", columns={"blockhash"}), 
+           @ORM\Index(name="blockNumber_idx", columns={"blockNumber"}), 
+           @ORM\Index(name="time_idx", columns={"time"})
+       }
+   )
  */
 class Block
 {
@@ -19,9 +30,16 @@ class Block
     private $id;
 
     /**
+     * DB Ids are 1-indexed, but bitcoind blocks are 0-indexed
+     *
+     * @ORM\Column(type="integer")
+     */
+    private $blockNumber;
+
+    /**
      * @ORM\Column(type="string", length=64)
      */
-    private $hash;
+    private $blockhash;
 
     /**
      * @ORM\Column(type="integer")
@@ -39,6 +57,8 @@ class Block
     private $version;
 
     /**
+     * See: https://en.bitcoin.it/wiki/Merged_mining_specification#Merkle_Branch
+     *
      * @ORM\Column(type="string", length=64)
      */
     private $merkleroot;
@@ -64,6 +84,11 @@ class Block
     private $difficulty;
 
     /**
+     * @ORM\Column(type="float")
+     */
+    private $totalvalue;
+
+    /**
      * @ORM\Column(type="string", length=64, nullable=true)
      */
     private $previousblockhash;
@@ -73,6 +98,21 @@ class Block
      */
     private $nextblockhash;
 
+    /**
+     * transactions
+     *
+     * @ORM\OneToMany(targetEntity="Transaction", mappedBy="block", cascade={"persist"})
+     * @ORM\OrderBy({"id" = "ASC"})
+     */
+    protected $transactions;
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $this->transactions = new \Doctrine\Common\Collections\ArrayCollection();
+    }
 
     /**
      * Get id
@@ -85,26 +125,49 @@ class Block
     }
 
     /**
-     * Set hash
+     * Set blockNumber
      *
-     * @param string $hash
+     * @param integer $blockNumber
      * @return Block
      */
-    public function setHash($hash)
+    public function setBlockNumber($blockNumber)
     {
-        $this->hash = $hash;
+        $this->blockNumber = $blockNumber;
 
         return $this;
     }
 
     /**
-     * Get hash
+     * Get blockNumber
+     *
+     * @return integer 
+     */
+    public function getBlockNumber()
+    {
+        return $this->blockNumber;
+    }
+
+    /**
+     * Set blockhash
+     *
+     * @param string $blockhash
+     * @return Block
+     */
+    public function setBlockhash($blockhash)
+    {
+        $this->blockhash = $blockhash;
+
+        return $this;
+    }
+
+    /**
+     * Get blockhash
      *
      * @return string 
      */
-    public function getHash()
+    public function getBlockhash()
     {
-        return $this->hash;
+        return $this->blockhash;
     }
 
     /**
@@ -292,6 +355,29 @@ class Block
     }
 
     /**
+     * Set totalvalue
+     *
+     * @param $totalvalue
+     * @return Block
+     */
+    public function setTotalvalue($totalvalue)
+    {
+        $this->totalvalue = $totalvalue;
+
+        return $this;
+    }
+
+    /**
+     * Get totalvalue
+     *
+     * @return \double 
+     */
+    public function getTotalvalue()
+    {
+        return $this->totalvalue;
+    }
+
+    /**
      * Set previousblockhash
      *
      * @param string $previousblockhash
@@ -335,5 +421,38 @@ class Block
     public function getNextblockhash()
     {
         return $this->nextblockhash;
+    }
+
+    /**
+     * Add transaction
+     *
+     * @param \Blockchain\Entity\Transaction $transaction
+     * @return Block
+     */
+    public function addTransaction(\Blockchain\Entity\Transaction $transaction)
+    {
+        $this->transactions[] = $transaction;
+
+        return $this;
+    }
+
+    /**
+     * Remove transaction
+     *
+     * @param \Blockchain\Entity\Transaction $transaction
+     */
+    public function removeTransaction(\Blockchain\Entity\Transaction $transaction)
+    {
+        $this->transactions->removeElement($transaction);
+    }
+
+    /**
+     * Get transaction
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getTransactions()
+    {
+        return $this->transactions;
     }
 }

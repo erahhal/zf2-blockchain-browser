@@ -1,0 +1,6 @@
+#!/bin/sh
+DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+echo 'drop table `Key`; drop table Input; drop table Output; drop table Transaction; drop table Block; drop table User;' | mysql -u root -ps3ns89ui onrush
+$DIR/generate-tables
+$DIR/clear-doctrine-cache
