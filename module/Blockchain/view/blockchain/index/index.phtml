@@ -1,1 +1,49 @@
-Action "index", controller "Index", module "Blockchain".
+<h1>Onru.sh Block Explorer</h1>
+
+<p>This is a partial clone of blockexplorer.com, rebuilt from the ground up.</p>
+
+<h2>Search</h2>
+
+Types of searches:
+
+<ul>
+    <li>block number</li>
+    <li>block hash</li>
+    <li>address</li>
+    <li>transaction hash</li>
+    <li>hash160</li>
+    <li>public key</li>
+</ul>
+
+<form action="/blockchain/search/index" method="get" name="blockchainSearch">
+    <input type="text" id="blockchainKeywords" name="blockchainKeywords" />
+    <input type="submit" value="Search" />
+</form>
+
+<h2>Latest blocks</h2>
+ 
+<div class="blocklistRow header">
+    <div class="number firstCol">Number</div>
+    <div class="blockhash">Hash</div>
+    <div class="time">Time</div>
+    <div class="transactionCount">Transactions</div>
+    <div class="totalBTC">Total BTC</div>
+    <div class="size">Size (kB)</div>
+</div>
+<div class="rowEnd"></div>
+<?php foreach ($this->blockList as $blockData) { ?>
+<div class="blocklistRow">
+    <div class="number firstCol"><a href="/blockchain/block/number/<?php echo $blockData['number']; ?>"><?php echo $blockData['number']; ?></a></div>
+    <div class="blockhash"><a href="/blockchain/block/hash/<?php echo $blockData['blockhash']; ?>"><?php echo substr($blockData['blockhash'], 0, 25); ?>...</a></div>
+    <div class="time"><?php echo $blockData['time']; ?></div>
+    <div class="transactionCount"><?php echo $blockData['transactionCount']; ?></div>
+    <div class="totalBTC"><?php echo $blockData['totalBTC']; ?></div>
+    <div class="size"><?php echo $blockData['size']; ?></div>
+</div>
+<div class="rowEnd"></div>
+<?php } ?>
+
+<a href="">Largest transactions</a>
+<a href="">strange transactions</a>
+
+

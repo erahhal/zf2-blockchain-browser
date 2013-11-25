@@ -36,3 +36,45 @@ div.container a.brand {
     padding: 8px 20px 12px 40px;
 }
 
+.rowEnd {
+    clear: left;
+    line-height: 0; 
+    height: 0;
+} 
+.blocklistRow {
+    width: 900px; 
+}
+.blocklistRow.alt {
+    background-color: blue;
+}
+.blocklistRow.header > div {
+    border-top: 1px solid #888;
+    font-weight: bold;
+}
+.blocklistRow > div {
+    height: 100%; 
+    float: left;
+    border-bottom: 1px solid #888;
+    border-right: 1px solid #888;
+}
+.blocklistRow .firstCol { 
+    border-left: 1px solid #888;
+}
+.blocklistRow .number {
+    width: 75px;
+}
+.blocklistRow .blockhash {
+    width: 250px;
+}
+.blocklistRow .time {
+    width: 160px;
+}
+.blocklistRow .transactionCount {
+    width: 100px;
+}
+.blocklistRow .totalBTC {
+    width: 75px;
+}
+.blocklistRow .size {
+    width: 75px;
+}

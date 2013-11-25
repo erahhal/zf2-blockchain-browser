@@ -10,6 +10,9 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Entity
  * @ORM\Table(
        name="Input",
+       uniqueConstraints={
+           @ORM\UniqueConstraint(name="inputTxid_vout_unique",columns={"inputTxid", "vout"})
+       },
        indexes={
            @ORM\Index(name="txid_idx", columns={"txid"}),
            @ORM\Index(name="hash160_idx", columns={"hash160"})
@@ -24,6 +27,11 @@ class Input
      * @ORM\Column(type="integer")
      */
     private $id;
+
+    /**
+     * @ORM\Column(type="string", length=64, nullable=true)
+     */
+    private $inputTxid;
 
     /**
      * @ORM\Column(type="string", length=64, nullable=true)
@@ -86,6 +94,29 @@ class Input
     public function getId()
     {
         return $this->id;
+    }
+
+    /**
+     * Set inputTxid
+     *
+     * @param string $inputTxid
+     * @return Input
+     */
+    public function setInputTxid($inputTxid)
+    {
+        $this->inputTxid = $inputTxid;
+
+        return $this;
+    }
+
+    /**
+     * Get inputTxid
+     *
+     * @return string 
+     */
+    public function getinputTxid()
+    {
+        return $this->inputTxid;
     }
 
     /**

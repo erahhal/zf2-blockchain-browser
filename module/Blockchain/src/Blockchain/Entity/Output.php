@@ -10,10 +10,14 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Entity
  * @ORM\Table(
        name="Output",
+       uniqueConstraints={
+           @ORM\UniqueConstraint(name="txid_n_unique",columns={"txid", "n"})
+       },
        indexes={
            @ORM\Index(name="txid_idx", columns={"txid"}),
            @ORM\Index(name="hash160_idx", columns={"hash160"}),
-           @ORM\Index(name="address_idx", columns={"address"})
+           @ORM\Index(name="address_idx", columns={"address"}),
+           @ORM\Index(name="n_idx", columns={"n"})
        }
    )
  */
@@ -36,16 +40,16 @@ class Output
      * note: Doctrine requires join to be on primary id
      *
      * @ORM\ManyToOne(targetEntity="Transaction", inversedBy="inputs", fetch="LAZY")
-     * @ORM\JoinColumn(name="transction_id", referencedColumnName="id")
+     * @ORM\JoinColumn(name="transaction_id", referencedColumnName="id")
      */
     protected $transaction;
 
     /**
      * API: n
      *
-     * @ORM\Column(name="`index`", type="integer")
+     * @ORM\Column(name="n", type="integer")
      */
-    private $index;
+    private $n;
 
     /**
      * @ORM\Column(type="float")
@@ -63,7 +67,7 @@ class Output
     private $scriptPubKeyHex;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer", nullable=true)
      */
     private $reqSigs;
 
@@ -118,26 +122,26 @@ class Output
     }
 
     /**
-     * Set index
+     * Set n
      *
-     * @param integer $index
+     * @param integer $n
      * @return Output
      */
-    public function setIndex($index)
+    public function setN($n)
     {
-        $this->index = $index;
+        $this->n = $n;
 
         return $this;
     }
 
     /**
-     * Get index
+     * Get n
      *
      * @return integer 
      */
-    public function getIndex()
+    public function getN()
     {
-        return $this->index;
+        return $this->n;
     }
 
     /**

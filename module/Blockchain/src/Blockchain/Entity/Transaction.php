@@ -45,14 +45,14 @@ class Transaction
     /**
      * inputs
      *
-     * @ORM\OneToMany(targetEntity="Input", mappedBy="transaction", fetch="LAZY", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="Input", mappedBy="transaction", fetch="LAZY", cascade={"persist","remove"})
      */
     protected $inputs;
 
     /**
      * outputs
      *
-     * @ORM\OneToMany(targetEntity="Output", mappedBy="transaction", fetch="LAZY", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="Output", mappedBy="transaction", fetch="LAZY", cascade={"persist","remove"})
      */
     protected $outputs;
 
@@ -67,7 +67,7 @@ class Transaction
     private $locktime;
 
     /**
-     * @ORM\Column(type="float")
+     * @ORM\Column(type="float", nullable=true)
      */
     private $fee;
 

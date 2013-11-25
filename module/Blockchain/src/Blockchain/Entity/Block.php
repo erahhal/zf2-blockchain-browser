@@ -84,7 +84,7 @@ class Block
     private $difficulty;
 
     /**
-     * @ORM\Column(type="float")
+     * @ORM\Column(type="float", nullable=true)
      */
     private $totalvalue;
 
@@ -101,7 +101,7 @@ class Block
     /**
      * transactions
      *
-     * @ORM\OneToMany(targetEntity="Transaction", mappedBy="block", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="Transaction", mappedBy="block", cascade={"persist", "remove"})
      * @ORM\OrderBy({"id" = "ASC"})
      */
     protected $transactions;
