@@ -44,6 +44,32 @@ return array(
                             ),
                         ),
                     ),
+                    'block-number' => array(
+                        'type'    => 'Segment',
+                        'options' => array(
+                            'route'    => '/block/number/:blocknumber',
+                            'constraints' => array(
+                                'blocknumber' => '[0-9]+',
+                            ),
+                            'defaults' => array(
+                                'controller' => 'Blockchain\Controller\Block',
+                                'action'     => 'index',
+                            ),
+                        ),
+                    ),
+                    'block-hash' => array(
+                        'type'    => 'Segment',
+                        'options' => array(
+                            'route'    => '/block/hash/:blockhash',
+                            'constraints' => array(
+                                'blockhash' => '[\\xa-fA-F0-9]+',
+                            ),
+                            'defaults' => array(
+                                'controller' => 'Blockchain\Controller\Block',
+                                'action'     => 'index',
+                            ),
+                        ),
+                    ),
                 ),
             ),
         ),

@@ -1,1 +1,23 @@
-Action "index", controller "Block", module "Blockchain".
+<h1>Block <?php echo $this->blockNumber; ?></h1>
+
+<ul>
+    <li>Hash: <?php echo $this->blockhash; ?></li>
+    <li>Previous block: <a href="/blockchain/block/hash/<?php echo $this->previousblockhash; ?>"><?php echo $this->previousblockhash; ?></a></li>
+    <li>Next block: <a href="/blockchain/block/hash/<?php echo $this->nextblockhash; ?>"><?php echo $this->nextblockhash; ?></a></li>
+    <li>Time: <?php echo $this->time; ?></li>
+    <li>Difficulty: <?php echo $this->difficulty; ?> ("Bits": <?php echo $this->bits; ?>)</li>
+    <li>Transactions: <?php echo $this->transactionCount; ?></li>
+    <li>Total BTC: <?php echo $this->totalBTC; ?></li>
+    <li>Size: <?php echo $this->size; ?> bytes</li>
+    <li>Merkle root: <?php echo $this->merkleroot; ?></li>
+    <li>Nonce: <?php echo $this->nonce; ?></li>
+    <li><a href="/block/raw/<?php echo $this->blockhash; ?>">Raw block</a></li>
+</ul>
+
+<h2>Transactions</h2>
+
+Transaction    Fee    Size (kB)  From (amount)  To (amount)
+e7f3548a14...   0   0.135   
+Generation: 50 + 0 total fees
+1BLbk4rAsEeRi5aB7FmStsRGE8ZLicH8iy: 50
+

@@ -23,8 +23,8 @@ class IndexController extends AbstractActionController
                     'number' => $blockEntity->getBlockNumber(),
                     'blockhash' => $blockEntity->getBlockhash(),
                     'time' => $blockEntity->getTime()->format('Y-m-d H:i:s'),
-                    'transactionCount' => 'todo',
-                    'totalBTC' => 'todo',
+                    'transactionCount' => $blockEntity->getTransactions()->count(),
+                    'totalBTC' => $blockEntity->getTotalvalue(),
                     'size' => $blockEntity->getSize()
                 );
             }
@@ -55,6 +55,8 @@ Todo:
 8. move code out of controller
 
 ";
+        // this slows things down
+        xhprof_disable();
 
         sleep(1);
 
