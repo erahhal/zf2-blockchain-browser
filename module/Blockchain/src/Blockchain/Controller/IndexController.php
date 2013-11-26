@@ -43,6 +43,7 @@ class IndexController extends AbstractActionController
         echo "
 Todo:
 
+* This block's taken fees are messed up: http://local-dev.onru.sh/blockchain/block/number/127713
 * MOVE from floats to Satoshis (requires a big int library for PHP)
 * how to extract public keys
 * does block 0 have value and transactions

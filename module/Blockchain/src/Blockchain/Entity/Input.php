@@ -15,6 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
        },
        indexes={
            @ORM\Index(name="txid_idx", columns={"txid"}),
+           @ORM\Index(name="address_idx", columns={"address"}),
            @ORM\Index(name="hash160_idx", columns={"hash160"})
        }
    )
