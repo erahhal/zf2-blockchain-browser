@@ -16,7 +16,11 @@ use Doctrine\ORM\Mapping as ORM;
        indexes={
            @ORM\Index(name="blockhash_idx", columns={"blockhash"}), 
            @ORM\Index(name="blockNumber_idx", columns={"blockNumber"}), 
-           @ORM\Index(name="time_idx", columns={"time"})
+           @ORM\Index(name="time_idx", columns={"time"}),
+           @ORM\Index(name="totalvalue_idx", columns={"totalvalue"}),
+           @ORM\Index(name="lostvalue_idx", columns={"lostvalue"}),
+           @ORM\Index(name="offeredFees_idx", columns={"offeredFees"}),
+           @ORM\Index(name="takenFees_idx", columns={"takenFees"})
        }
    )
  */
@@ -89,6 +93,11 @@ class Block
     private $totalvalue;
 
     /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $lostvalue;
+
+    /**
      * @ORM\Column(type="string", length=64, nullable=true)
      */
     private $previousblockhash;
@@ -97,6 +106,16 @@ class Block
      * @ORM\Column(type="string", length=64, nullable=true)
      */
     private $nextblockhash;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $offeredFees;
+
+    /**
+     * @ORM\Column(type="float", nullable=true)
+     */
+    private $takenFees;
 
     /**
      * transactions
@@ -378,6 +397,29 @@ class Block
     }
 
     /**
+     * Set lostvalue
+     *
+     * @param $lostvalue
+     * @return Block
+     */
+    public function setLostvalue($lostvalue)
+    {
+        $this->lostvalue = $lostvalue;
+
+        return $this;
+    }
+
+    /**
+     * Get lostvalue
+     *
+     * @return \double 
+     */
+    public function getLostvalue()
+    {
+        return $this->lostvalue;
+    }
+
+    /**
      * Set previousblockhash
      *
      * @param string $previousblockhash
@@ -421,6 +463,52 @@ class Block
     public function getNextblockhash()
     {
         return $this->nextblockhash;
+    }
+
+    /**
+     * Set offeredFees
+     *
+     * @param $offeredFees
+     * @return Block
+     */
+    public function setOfferedFees($offeredFees)
+    {
+        $this->offeredFees = $offeredFees;
+
+        return $this;
+    }
+
+    /**
+     * Get offeredFees
+     *
+     * @return \double 
+     */
+    public function getOfferedFees()
+    {
+        return $this->offeredFees;
+    }
+
+    /**
+     * Set takenFees
+     *
+     * @param $takenFees
+     * @return Block
+     */
+    public function setTakenFees($takenFees)
+    {
+        $this->takenFees = $takenFees;
+
+        return $this;
+    }
+
+    /**
+     * Get takenFees
+     *
+     * @return \double 
+     */
+    public function getTakenFees()
+    {
+        return $this->takenFees;
     }
 
     /**

@@ -36,29 +36,43 @@ div.container a.brand {
     padding: 8px 20px 12px 40px;
 }
 
+.simpleList {
+    list-style-type: none;
+    margin-left: 0;
+    padding-left: 0;
+}
+
+.dataLabel {
+    font-weight: bold;
+    display: inline-block;
+    text-align: right;
+    margin-right: 10px;
+    width: 150px;
+}
+
 .rowEnd {
     clear: left;
     line-height: 0; 
     height: 0;
 } 
+
 .blocklistRow {
-    width: 900px; 
+    border-bottom: 1px solid #888;
+    overflow: hidden;
+    width: 785px; 
 }
 .blocklistRow.alt {
     background-color: blue;
 }
 .blocklistRow.header > div {
-    border-top: 1px solid #888;
     font-weight: bold;
+    border-top: 1px solid #888;
 }
 .blocklistRow > div {
     height: 100%; 
     float: left;
-    border-bottom: 1px solid #888;
-    border-right: 1px solid #888;
 }
 .blocklistRow .firstCol { 
-    border-left: 1px solid #888;
 }
 .blocklistRow .number {
     width: 75px;
@@ -73,8 +87,42 @@ div.container a.brand {
     width: 100px;
 }
 .blocklistRow .totalBTC {
-    width: 75px;
+    width: 125px;
 }
 .blocklistRow .size {
     width: 75px;
+}
+
+.txlistRow {
+    border-bottom: 1px solid #888;
+    overflow: hidden;
+    width: 1120px;
+}
+.txlistRow.alt {
+    background-color: blue;
+}
+.txlistRow.header > div {
+    font-weight: bold;
+    border-top: 1px solid #888;
+}
+.txlistRow > div {
+    height: 100%; 
+    float: left;
+}
+.txlistRow .firstCol { 
+}
+.txlistRow .transaction {
+    width: 250px;
+}
+.txlistRow .fee {
+    width: 50px;
+}
+.txlistRow .size {
+    width: 120px;
+}
+.txlistRow .from {
+    width: 350px;
+}
+.txlistRow .to {
+    width: 350px;
 }

@@ -84,6 +84,11 @@ class Input
      */
     private $hash160;
 
+    /**
+     * @ORM\Column(type="string", length=34, nullable=true)
+     */
+    private $address;
+
 
 
     /**
@@ -301,6 +306,29 @@ class Input
     public function getHash160()
     {
         return $this->hash160;
+    }
+
+    /**
+     * Set address
+     *
+     * @param string $address
+     * @return Output
+     */
+    public function setAddress($address)
+    {
+        $this->address = $address;
+
+        return $this;
+    }
+
+    /**
+     * Get address
+     *
+     * @return string 
+     */
+    public function getAddress()
+    {
+        return $this->address;
     }
 
     /**

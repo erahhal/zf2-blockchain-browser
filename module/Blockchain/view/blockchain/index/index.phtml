@@ -5,15 +5,7 @@
 <h2>Search</h2>
 
 Types of searches:
-
-<ul>
-    <li>block number</li>
-    <li>block hash</li>
-    <li>address</li>
-    <li>transaction hash</li>
-    <li>hash160</li>
-    <li>public key</li>
-</ul>
+    block number, block hash, address, transaction hash, hash160, public key
 
 <form action="/blockchain/search/index" method="get" name="blockchainSearch">
     <input type="text" id="blockchainKeywords" name="blockchainKeywords" />
@@ -43,7 +35,9 @@ Types of searches:
 <div class="rowEnd"></div>
 <?php } ?>
 
-<a href="">Largest transactions</a>
-<a href="">strange transactions</a>
+<h2>Unique Transactions</h2>
 
-
+<ul class="simpleList">
+    <li><a href="">Largest transactions</a></li>
+    <li><a href="">Strange transactions</a></li>
+</ul>

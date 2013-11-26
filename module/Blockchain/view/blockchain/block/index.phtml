@@ -1,23 +1,64 @@
-<h1>Block <?php echo $this->blockNumber; ?></h1>
+<h1>Block <?php echo $this->blocknumber; ?></h1>
 
-<ul>
-    <li>Hash: <?php echo $this->blockhash; ?></li>
-    <li>Previous block: <a href="/blockchain/block/hash/<?php echo $this->previousblockhash; ?>"><?php echo $this->previousblockhash; ?></a></li>
-    <li>Next block: <a href="/blockchain/block/hash/<?php echo $this->nextblockhash; ?>"><?php echo $this->nextblockhash; ?></a></li>
-    <li>Time: <?php echo $this->time; ?></li>
-    <li>Difficulty: <?php echo $this->difficulty; ?> ("Bits": <?php echo $this->bits; ?>)</li>
-    <li>Transactions: <?php echo $this->transactionCount; ?></li>
-    <li>Total BTC: <?php echo $this->totalBTC; ?></li>
-    <li>Size: <?php echo $this->size; ?> bytes</li>
-    <li>Merkle root: <?php echo $this->merkleroot; ?></li>
-    <li>Nonce: <?php echo $this->nonce; ?></li>
-    <li><a href="/block/raw/<?php echo $this->blockhash; ?>">Raw block</a></li>
+<ul class="simpleList">
+    <li><span class="dataLabel">Hash:</span> <?php echo $this->blockhash; ?></li>
+    <li><span class="dataLabel">Previous block:</span> <a href="/blockchain/block/hash/<?php echo $this->previousblockhash; ?>"><?php echo $this->previousblockhash; ?></a></li>
+    <li><span class="dataLabel">Next block:</span> <a href="/blockchain/block/hash/<?php echo $this->nextblockhash; ?>"><?php echo $this->nextblockhash; ?></a></li>
+    <li><span class="dataLabel">Time:</span> <?php echo $this->time; ?></li>
+    <li><span class="dataLabel">Difficulty:</span> <?php echo $this->difficulty; ?> ("Bits": <?php echo $this->bits; ?>)</li>
+    <li><span class="dataLabel">Transactions:</span> <?php echo $this->transactionCount; ?></li>
+    <li><span class="dataLabel">Total BTC:</span> <?php echo $this->totalBTC; ?></li>
+    <li><span class="dataLabel">Lost BTC:</span> <?php echo $this->lostBTC; ?></li>
+    <li><span class="dataLabel">Offered Fees:</span> <?php echo $this->offeredFees; ?></li>
+    <li><span class="dataLabel">Taken Fees:</span> <?php echo rtrim(sprintf('%.20F', $this->takenFees), '0'); ?></li>
+    <li><span class="dataLabel">Size:</span> <?php echo $this->size; ?> bytes</li>
+    <li><span class="dataLabel">Merkle root:</span> <?php echo $this->merkleroot; ?></li>
+    <li><span class="dataLabel">Nonce:</span> <?php echo $this->nonce; ?></li>
+    <li><span class="dataLabel">&nbsp;</span> <a href="/block/raw/<?php echo $this->blockhash; ?>">Raw block</a></li>
 </ul>
 
 <h2>Transactions</h2>
-
-Transaction    Fee    Size (kB)  From (amount)  To (amount)
-e7f3548a14...   0   0.135   
-Generation: 50 + 0 total fees
-1BLbk4rAsEeRi5aB7FmStsRGE8ZLicH8iy: 50
+<div class="txlistRow header">
+    <div class="transaction firstCol">Transaction</div>
+    <div class="fee">Fee</div>
+    <div class="size">Size (bytes)</div>
+    <div class="from">From (amount)</div>
+    <div class="to">To (amount)</div>
+</div>
+<div class="rowEnd"></div>
+<?php foreach ($this->transactions as $txData) { ?>
+<div class="txlistRow">
+    <div class="transaction firstCol"><a href="/blockchain/transaction/<?php echo $txData['txid']; ?>"><?php echo substr($txData['txid'], 0, 25); ?>...</a></div>
+    <div class="fee"><?php echo $txData['fee']; ?></div>
+    <div class="size"><?php echo $txData['size']; ?></div>
+    <div class="from">
+        <ul class="simpleList">
+        <?php foreach ($txData['from'] as $input) { ?>
+            <li>
+            <?php if ($input['type'] == 'coinbase') { ?>
+                Generation: <?php echo $input['amount']; ?> 
+                <?php if ($input['takenFees'] > 0) { ?>
+                    + <?php echo rtrim(sprintf('%.20F', $input['takenFees']), '0'); ?> total fees
+                <?php } else if ($input['takenFees'] < 0) { ?>
+                    - <?php echo rtrim(sprintf('%.20F', abs($input['takenFees'])), '0'); ?> lost BTC
+                <?php } ?>
+            <?php } else { ?>
+                <a href="/blockchain/address/<?php echo $input['address']; ?>"><?php echo $input['address']; ?></a>: <?php echo $input['amount']; ?>
+            <?php } ?>
+            </li>
+        <?php } ?>
+        </ul>
+    </div>
+    <div class="to">
+        <ul class="simpleList">
+        <?php foreach ($txData['to'] as $output) { ?>
+            <li>
+                <a href="/blockchain/address/<?php echo $output['address']; ?>"><?php echo $output['address']; ?></a>: <?php echo $output['amount']; ?>
+            </li>
+        <?php } ?>
+        </ul>
+    </div>
+</div>
+<div class="rowEnd"></div>
+<?php } ?>
 

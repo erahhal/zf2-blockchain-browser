@@ -72,6 +72,11 @@ class Transaction
     private $fee;
 
     /**
+     * @ORM\Column(type="integer")
+     */
+    private $size;
+
+    /**
      * Constructor
      */
     public function __construct()
@@ -226,6 +231,29 @@ class Transaction
     public function getFee()
     {
         return $this->fee;
+    }
+
+    /**
+     * Set size
+     *
+     * @param integer $size
+     * @return Transaction
+     */
+    public function setSize($size)
+    {
+        $this->size = $size;
+
+        return $this;
+    }
+
+    /**
+     * Get size
+     *
+     * @return integer 
+     */
+    public function getSize()
+    {
+        return $this->size;
     }
 
     /**
