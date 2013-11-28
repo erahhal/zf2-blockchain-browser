@@ -84,6 +84,7 @@ complete:
             $blockId = $blockEntity->getId();
             $blockhash = $blockEntity->getBlockhash();
             $blockNumber = $blockEntity->getBlockNumber();
+            $circulation = $blockEntity->getCirculation();
 
             $block = $this->getBlock($blockhash);
 
@@ -96,6 +97,7 @@ complete:
         } else {
             $blockNumber = 0;
             $blockhash = $client->call('getblockhash', array($blockNumber));
+            $circulation = 0;
             $coinbaseValue = 50;
         }
 
@@ -180,6 +182,7 @@ complete:
                             $inputEntity->setCoinbase($input['coinbase']);
                             $inputEntity->setValue($coinbaseValue);
                             $inputValue = $inputValue + $coinbaseValue;
+                            $circulation = $circulation + $coinbaseValue;
                         } else {
                             if (isset($seenTxids[$input['txid']])) {
                                 // input of one transaction is referencing the output of another transaction in the same block.  flush writes.
@@ -266,6 +269,7 @@ complete:
             $blockEntity->setOfferedFees($offeredFees);
             $blockEntity->setTakenFees($takenFees);
             $blockEntity->setTotalvalue($totalValue);
+            $blockEntity->setCirculation($circulation);
             $blockEntity->setLostvalue(round($offeredFees - $takenFees, 8));
             $objectManager->persist($blockEntity);
             $count++;
