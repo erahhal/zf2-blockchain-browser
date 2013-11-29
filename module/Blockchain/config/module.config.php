@@ -95,9 +95,10 @@ return array(
     ),
     'controllers' => array(
         'invokables' => array(
-            'Blockchain\Controller\Index' => 'Blockchain\Controller\IndexController',
-            'Blockchain\Controller\Block' => 'Blockchain\Controller\BlockController',
-            'Blockchain\Controller\Transaction' => 'Blockchain\Controller\TransactionController',
+            // 'Blockchain\Controller\Index' => 'Blockchain\Controller\IndexController',
+            // 'Blockchain\Controller\Block' => 'Blockchain\Controller\BlockController',
+            // 'Blockchain\Controller\Transaction' => 'Blockchain\Controller\TransactionController',
+            // 'Blockchain\Controller\Chart' => 'Blockchain\Controller\ChartController',
         ),
     ),
     'view_manager' => array(

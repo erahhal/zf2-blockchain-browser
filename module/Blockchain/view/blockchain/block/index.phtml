@@ -10,7 +10,7 @@
     <li><span class="dataLabel">Total BTC:</span> <?php echo $this->totalBTC; ?></li>
     <li><span class="dataLabel">Lost BTC:</span> <?php echo $this->lostBTC; ?></li>
     <li><span class="dataLabel">Offered Fees:</span> <?php echo $this->offeredFees; ?></li>
-    <li><span class="dataLabel">Taken Fees:</span> <?php echo rtrim(sprintf('%.20F', $this->takenFees), '0'); ?></li>
+    <li><span class="dataLabel">Taken Fees:</span> <?php echo rtrim(sprintf('%.8F', $this->takenFees), '0'); ?></li>
     <li><span class="dataLabel">Size:</span> <?php echo $this->size; ?> bytes</li>
     <li><span class="dataLabel">Merkle root:</span> <?php echo $this->merkleroot; ?></li>
     <li><span class="dataLabel">Nonce:</span> <?php echo $this->nonce; ?></li>
@@ -38,12 +38,12 @@
             <?php if ($input['type'] == 'coinbase') { ?>
                 Generation: <?php echo $input['amount']; ?> 
                 <?php if ($input['takenFees'] > 0) { ?>
-                    + <?php echo rtrim(sprintf('%.20F', $input['takenFees']), '0'); ?> total fees
+                    + <?php echo rtrim(sprintf('%.8F', $input['takenFees']), '0'); ?> total fees
                 <?php } else if ($input['takenFees'] < 0) { ?>
-                    - <?php echo rtrim(sprintf('%.20F', abs($input['takenFees'])), '0'); ?> lost BTC
+                    - <?php echo rtrim(sprintf('%.8F', abs($input['takenFees'])), '0'); ?> lost BTC
                 <?php } ?>
             <?php } else { ?>
-                <a href="/blockchain/address/<?php echo $input['address']; ?>"><?php echo $input['address']; ?></a>: <?php echo $input['amount']; ?>
+                <a href="/blockchain/address/<?php echo $input['address']; ?>"><?php echo $input['address']; ?></a>: <?php echo rtrim(sprintf('%.8F', $input['amount']), 0); ?>
             <?php } ?>
             </li>
         <?php } ?>
@@ -53,7 +53,7 @@
         <ul class="simpleList">
         <?php foreach ($txData['to'] as $output) { ?>
             <li>
-                <a href="/blockchain/address/<?php echo $output['address']; ?>"><?php echo $output['address']; ?></a>: <?php echo $output['amount']; ?>
+                <a href="/blockchain/address/<?php echo $output['address']; ?>"><?php echo $output['address']; ?></a>: <?php echo rtrim(sprintf('%.8F', $output['amount']), 0); ?>
             </li>
         <?php } ?>
         </ul>

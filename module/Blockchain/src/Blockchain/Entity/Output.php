@@ -52,7 +52,7 @@ class Output
     private $n;
 
     /**
-     * @ORM\Column(type="float")
+     * @ORM\Column(type="bigint")
      */
     private $value;
 
@@ -147,7 +147,7 @@ class Output
     /**
      * Set value
      *
-     * @param float $value
+     * @param bigint $value
      * @return Output
      */
     public function setValue($value)
@@ -160,7 +160,7 @@ class Output
     /**
      * Get value
      *
-     * @return float 
+     * @return bigint 
      */
     public function getValue()
     {

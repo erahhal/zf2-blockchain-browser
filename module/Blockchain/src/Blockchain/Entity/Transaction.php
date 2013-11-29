@@ -67,7 +67,7 @@ class Transaction
     private $locktime;
 
     /**
-     * @ORM\Column(type="float", nullable=true)
+     * @ORM\Column(type="bigint", nullable=true)
      */
     private $fee;
 
@@ -213,7 +213,7 @@ class Transaction
     /**
      * Set fee
      *
-     * @param float $fee
+     * @param bigint $fee
      * @return Transaction
      */
     public function setFee($fee)
@@ -226,7 +226,7 @@ class Transaction
     /**
      * Get fee
      *
-     * @return float 
+     * @return bigint 
      */
     public function getFee()
     {

@@ -76,7 +76,7 @@ class Input
     private $vout;
 
     /**
-     * @ORM\Column(type="float")
+     * @ORM\Column(type="bigint")
      */
     private $value;
 
@@ -266,7 +266,7 @@ class Input
     /**
      * Set value
      *
-     * @param float $value
+     * @param bigint $value
      * @return Input
      */
     public function setValue($value)
@@ -279,7 +279,7 @@ class Input
     /**
      * Get value
      *
-     * @return float 
+     * @return bigint 
      */
     public function getValue()
     {

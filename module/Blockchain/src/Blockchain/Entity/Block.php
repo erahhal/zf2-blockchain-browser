@@ -88,12 +88,12 @@ class Block
     private $difficulty;
 
     /**
-     * @ORM\Column(type="float", nullable=true)
+     * @ORM\Column(type="bigint", nullable=true)
      */
     private $totalvalue;
 
     /**
-     * @ORM\Column(type="float", nullable=true)
+     * @ORM\Column(type="bigint", nullable=true)
      */
     private $lostvalue;
 
@@ -108,14 +108,19 @@ class Block
     private $nextblockhash;
 
     /**
-     * @ORM\Column(type="float", nullable=true)
+     * @ORM\Column(type="bigint", nullable=true)
      */
     private $offeredFees;
 
     /**
-     * @ORM\Column(type="float", nullable=true)
+     * @ORM\Column(type="bigint", nullable=true)
      */
     private $takenFees;
+
+    /**
+     * @ORM\Column(type="bigint", nullable=true)
+     */
+    private $circulation;
 
     /**
      * transactions
@@ -509,6 +514,29 @@ class Block
     public function getTakenFees()
     {
         return $this->takenFees;
+    }
+
+    /**
+     * Set circulation
+     *
+     * @param $circulation
+     * @return Block
+     */
+    public function setCirculation($circulation)
+    {
+        $this->circulation = $circulation;
+
+        return $this;
+    }
+
+    /**
+     * Get circulation
+     *
+     * @return \double 
+     */
+    public function getCirculation()
+    {
+        return $this->circulation;
     }
 
     /**

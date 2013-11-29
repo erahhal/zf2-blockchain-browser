@@ -50,7 +50,7 @@ var options = {
     bezierCurve : true,
     
     //Boolean - Whether to show a dot for each point
-    pointDot : true,
+    pointDot : false,
     
     //Number - Radius of each point dot in pixels
     pointDotRadius : 3,
@@ -81,25 +81,6 @@ var options = {
     
 }
 
-var data = {
-    labels : ["January","February","March","April","May","June","July"],
-    datasets : [
-        {
-            fillColor : "rgba(220,220,220,0.5)",
-            strokeColor : "rgba(220,220,220,1)",
-            pointColor : "rgba(220,220,220,1)",
-            pointStrokeColor : "#fff",
-            data : [65,59,90,81,56,55,40]
-        },
-        {
-            fillColor : "rgba(151,187,205,0.5)",
-            strokeColor : "rgba(151,187,205,1)",
-            pointColor : "rgba(151,187,205,1)",
-            pointStrokeColor : "#fff",
-            data : [28,48,40,19,96,27,100]
-        }
-    ]
-}
 
 function setupChart()
 {
@@ -110,7 +91,7 @@ function setupChart()
         height: 200
     });
     var ctx = myChart.get(0).getContext('2d');
-    new Chart(ctx).Line(data, options);
+    new Chart(ctx).Line(chartData, options);
 }
 setupChart();
 $(window).resize(function() {
