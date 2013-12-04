@@ -28,7 +28,7 @@
     <div class="type">{{txType}}: {{type}}</div>
     <div class="fromto">
         <ul class="simpleList">
-        {{#from}}
+        {{#fromto}}
             <li>
             {{#isGeneration}}
                 Generation
@@ -37,7 +37,7 @@
                 <a href="/blockchain/address/{{address}}">{{address}}</a>
             {{/isGeneration}}
             </li>
-        {{/from}}
+        {{/fromto}}
         </ul>
     </div>
     <div class="balance">{{balance}}</div>

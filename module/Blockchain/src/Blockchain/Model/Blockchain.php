@@ -119,6 +119,7 @@ Maybe:
             }
             
             echo "Importing Block: $blockNumber\n";
+            if ($blockNumber >  2812) die();
 
             $gmp_totalBlockValue = gmp_init("0");
 
@@ -207,6 +208,7 @@ Maybe:
                             $pubkey = null;
                             $hash160 = null;
                             $address = null;
+                            $keyEntity = null;
                             if (preg_match('/(.+) (.+)/', $input['scriptSig']['asm'], $matches)) {
 
                                 // Standard Transaction to Bitcoin address (pay-to-pubkey-hash)
@@ -231,12 +233,12 @@ Maybe:
                                     } else {
                                         $this->objectManager->flush();
                                         $keyEntity = $this->objectManager->getRepository('Blockchain\Entity\Key')->findOneBy(array('address' => $address));
-                                        if (!$keyEntity) {
-                                            die("problem finding input key: $address\n");
-                                        }
                                     }
                                 }
 
+                                if (!$keyEntity) {
+                                    die("problem finding input key: $address\n");
+                                }
                                 $inputEntity->setKey($keyEntity);
                             } else if (preg_match('/([\S]+)/', $input['scriptSig']['asm'])) {
 
@@ -248,6 +250,9 @@ Maybe:
                                 die("strange scriptSig: ".$input['scriptSig']['asm']."\n");
                             }
 
+                            if ($address && !$keyEntity) {
+                                die("Input key entity not generated: $address\n");
+                            }
                             $inputEntity->setHash160($hash160);
                             $inputEntity->setAddress($address);
                             $inputEntity->setVout($input['vout']);
@@ -286,7 +291,7 @@ Maybe:
                         $pubkey = null;
                         $hash160 = null;
                         $address = null;
-                        if (preg_match('/^OP_DUP OP_HASH160 ([\S]+) OP_EQUALVERIFY OP_CHECKSIG$/', $output['scriptPubKey']['asm'], $matches)) {
+                        if (preg_match('/OP_DUP OP_HASH160 ([\S]+) OP_EQUALVERIFY OP_CHECKSIG/', $output['scriptPubKey']['asm'], $matches)) {
                             $hash160 = $matches[1];
                             $address = self::hash160ToAddress($hash160);
                         } else if (preg_match('/^([\S]+) OP_CHECKSIG$/', $output['scriptPubKey']['asm'], $matches)) {
@@ -294,16 +299,22 @@ Maybe:
                             $hash160 = self::pubkeyToHash160($pubkey);
                             $address = self::hash160ToAddress($hash160);
                         }
+                        $keyEntity = null;
                         if ($address) {
                             $keyEntity = $this->objectManager->getRepository('Blockchain\Entity\Key')->findOneBy(array('address' => $address));
-                            if (!$keyEntity && !isset($seenAddresses[$address])) {
-                                $keyEntity = new \Blockchain\Entity\Key(); 
-                                $keyEntity->setPubkey($pubkey);
-                                $keyEntity->setHash160($hash160);
-                                $keyEntity->setAddress($address);
-                                $keyEntity->setFirstblockhash($blockhash);
-                                $keyEntity->setFirstblock($blockEntity);
-                                $seenAddresses[$address] = array('pubkey' => $pubkey);
+                            if (!$keyEntity) {
+                                if (!isset($seenAddresses[$address])) {
+                                    $keyEntity = new \Blockchain\Entity\Key(); 
+                                    $keyEntity->setPubkey($pubkey);
+                                    $keyEntity->setHash160($hash160);
+                                    $keyEntity->setAddress($address);
+                                    $keyEntity->setFirstblockhash($blockhash);
+                                    $keyEntity->setFirstblock($blockEntity);
+                                    $seenAddresses[$address] = array('pubkey' => $pubkey);
+                                } else {
+                                    $this->objectManager->flush();
+                                    $keyEntity = $this->objectManager->getRepository('Blockchain\Entity\Key')->findOneBy(array('address' => $address));
+                                }
                             }
                             if ($keyEntity) {
                                 if ($pubkey && !($keyEntity->getPubkey())) {
@@ -318,6 +329,17 @@ Maybe:
                                 die ("Situation: address seen multiple times in transaction, and pubkey available\n");
                             }
                         }
+                        if ($address && !$keyEntity) {
+                            die("Output key entity not generated: $address\n");
+                        }
+                        if ($txid == '00e45be5b605fdb2106afa4cef5992ee6d4e3724de5dc8b13e729a3fc3ad4b94') {
+                            if ($address == '1AbHNFdKJeVL8FRZyRZoiTzG9VCmzLrtvm') {
+                                print_r($keyEntity);
+                                die();
+                            } else {
+                                echo "$address\n";
+                            }
+                        }
                         $outputEntity->setHash160($hash160);
                         if (isset($output['scriptPubKey']['reqSigs'])) {
                             $outputEntity->setReqSigs($output['scriptPubKey']['reqSigs']);
@@ -328,7 +350,8 @@ Maybe:
                             echo print_r($output, true);
                             die();
                         }
-                        if ($address && $address != $output['scriptPubKey']['addresses'][0]) {
+                        if (isset($output['scriptPubKey']['addresses'][0]) && $address != $output['scriptPubKey']['addresses'][0]) {
+                            echo  $output['scriptPubKey']['asm']."\n";
                             die ("inconsistent output addresses\n    parsed: $address\n    given: {$output['scriptPubKey']['addresses'][0]}\n");
                         }
                         $outputEntity->setAddress($output['scriptPubKey']['addresses'][0]);
@@ -611,17 +634,18 @@ Maybe:
                 'amountSatoshis' => $outputEntity->getValue(),
                 'amount' => self::gmpSatoshisToFloatBTC(gmp_init($outputEntity->getValue())),
                 'type' => ($outputEntity->getType() == 'pubkeyhash' ? 'Address' : ucfirst($outputEntity->getType())),
-                'from' => array()
+                'fromto' => array()
             );
             foreach ($transactionEntity->getInputs() as $inputEntity) {
                 if ($inputEntity->getCoinbase()) {
-                    $output['from'][] = array(
+                    $output['fromto'][] = array(
                         'isGeneration' => true,
                     );
                 } else {
-                    $output['from'][] = array(
+                    $inputKeyEntity = $inputEntity->getKey();
+                    $output['fromto'][] = array(
                         'isGeneration' => false,
-                        'address' => $inputEntity->getKey()->getAddress(),
+                        'address' => $inputKeyEntity ? $inputKeyEntity->getAddress() : "f'd up",
                     );
                 }
             }
@@ -653,10 +677,10 @@ Maybe:
                 'amountSatoshis' => $inputEntity->getValue(),
                 'amount' => self::gmpSatoshisToFloatBTC(gmp_init($inputEntity->getValue())),
                 'type' => 'Address',
-                'to' => array()
+                'fromto' => array()
             );
             foreach ($transactionEntity->getOutputs() as $outputEntity) {
-                $input['to'][] = array(
+                $input['fromto'][] = array(
                     'isGeneration' => false,
                     'address' => $outputEntity->getKey()->getAddress(),
                 );
@@ -704,6 +728,7 @@ Maybe:
         }
 
         $addressData = array(
+            'address' => $keyEntity->getAddress(),
             'firstseen' => $keyEntity->getFirstblock()->getTime()->format('Y-m-d H:i:s'),
             'receivedTransactions' => $receivedCount,
             'receivedBTC' => 'TBD',

@@ -96,6 +96,18 @@ return array(
                             ),
                         ),
                     ),
+                    'charts' => array(
+                        'type'    => 'Segment',
+                        'options' => array(
+                            'route'    => '/charts',
+                            'constraints' => array(
+                            ),
+                            'defaults' => array(
+                                'controller' => 'Blockchain\Controller\Chart',
+                                'action'     => 'index',
+                            ),
+                        ),
+                    ),
                 ),
             ),
         ),

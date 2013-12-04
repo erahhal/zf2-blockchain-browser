@@ -21,4 +21,36 @@ return array(
         'outputDir' => 'data/xhprof',
         'viewLink' => true
     ),
+    'navigation' => array(
+        'default' => array(
+            array(
+                'label' => 'Home',
+                'route' => 'home',
+            ),
+            array(
+                'label' => 'Blockchain Browser',
+                'route' => 'blockchain',
+                /*
+                'pages' => array(
+                    array(
+                        'label' => 'Block',
+                        'route' => 'blockchain/block-number',
+                        'params' => array(
+                            'blocknumber' => '1',
+                        ),
+                    ),
+                ),
+                */
+            ),
+            array(
+                'label' => 'Charts',
+                'route' => 'blockchain/charts',
+            ),
+        ),
+    ),
+    'service_manager' => array(
+        'factories' => array(
+            'navigation' => 'Zend\Navigation\Service\DefaultNavigationFactory',
+        ),
+    ),
 );
