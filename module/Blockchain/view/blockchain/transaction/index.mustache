@@ -1,0 +1,71 @@
+<h1>Transaction</h1>
+
+<ul class="simpleList">
+    <li><span class="dataLabel">Hash:</span> {{txid}}</li>
+    <li><span class="dataLabel">Appeared in block:</span> <a href="/blockchain/block/number/{{blocknumber}}">{{blocknumber}}</a> ({{blocktime}})</li>
+    <li><span class="dataLabel">Number of inputs:</span> {{inputCount}} (<a href="#input">Jump to inputs</a>)</li>
+    <li><span class="dataLabel">Total BTC in:</span> {{totalIn}}</li>
+    <li><span class="dataLabel">Number of outputs:</span> {{outputCount}} (<a href="#output">Jump to outpus</a>)</li>
+    <li><span class="dataLabel">Total BTC out:</span> {{totalOut}}</li>
+    <li><span class="dataLabel">Size:</span> {{size}} bytes</li>
+    <li><span class="dataLabel">Fee:</span> {{fee}}</li>
+    <li><span class="dataLabel">&nbsp;</span> <a href="/transaction/raw/{{txid}}">Raw transaction</a></li>
+</ul>
+
+<h2>Inputs</h2>
+<div class="inputlistRow header">
+    <div class="prev firstCol">Previous output (index)</div>
+    <div class="amount">Amount</div>
+    <div class="from">From address</div>
+    <div class="type">Type</div>
+    <div class="scriptSig">ScriptSig</div>
+</div>
+<div class="rowEnd"></div>
+{{#inputs}}
+<div class="inputlistRow">
+    {{#isCoinbase}}
+        <div class="prev firstCol">N/A</a></div>
+    {{/isCoinbase}}
+    {{^isCoinbase}}
+        <div class="prev firstCol"><a href="/blockchain/transaction/{{previousTxid}}#o{{vout}}">{{previousTxidTruncated}} ({{vout}})</a></div>
+    {{/isCoinbase}}
+    <div class="amount">{{amount}}</div>
+    {{#isCoinbase}}
+        <div class="from">N/A</div>
+    {{/isCoinbase}}
+    {{^isCoinbase}}
+        <div class="from"><a href="/blockchain/address/{{fromAddress}}">{{fromAddress}}</a></div>
+    {{/isCoinbase}}
+    <div class="type">{{type}}</div>
+    <div class="scriptSig">{{scriptSig}}</div>
+</div>
+<div class="rowEnd"></div>
+{{/inputs}}
+
+<h2>Outputs</h2>
+<div class="outputlistRow header">
+    <div class="index firstCol">Index</div>
+    <div class="redeemedAt">Reedemed at input</div>
+    <div class="amount">Amount</div>
+    <div class="to">To address</div>
+    <div class="type">Type</div>
+    <div class="scriptPubKey">ScriptPubKey</div>
+</div>
+<div class="rowEnd"></div>
+{{#outputs}}
+<div class="outputlistRow">
+    <div class="index firstCol">{{index}}</div>
+    {{#redeemedAt}}
+        <div class="redeemedAt"><a href="/blockchain/transaction/{{redeemedAt}}">{{redeemedAtTruncated}}</a></div>
+    {{/redeemedAt}}
+    {{^redeemedAt}}
+        <div class="redeemedAt">Not yet redeemed</div>
+    {{/redeemedAt}}
+    <div class="amount">{{amount}}</div>
+    <div class="to"><a href="/blockchain/address/{{address}}">{{address}}</a></div>
+    <div class="type">{{type}}&nbsp;</div>
+    <div class="scriptPubKey">{{scriptPubKey}}</div>
+</div>
+<div class="rowEnd"></div>
+{{/outputs}}
+

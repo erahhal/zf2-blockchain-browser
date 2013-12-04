@@ -89,6 +89,22 @@ class Output
     private $type;
 
     /**
+     * key
+     *
+     * @ORM\ManyToOne(targetEntity="Key", fetch="LAZY")
+     * @ORM\JoinColumn(name="key_id", referencedColumnName="id")
+     */
+    protected $key;
+
+    /**
+     * redeemingInput
+     *
+     * @ORM\OneToOne(targetEntity="Input", fetch="LAZY")
+     * @ORM\JoinColumn(name="redeeming_input_id", referencedColumnName="id")
+     */
+    protected $redeemingInput;
+
+    /**
      * Get id
      *
      * @return integer 
@@ -303,6 +319,52 @@ class Output
     public function getType()
     {
         return $this->type;
+    }
+
+    /**
+     * Set key
+     *
+     * @param \Blockchain\Entity\Key $key
+     * @return Output
+     */
+    public function setKey(\Blockchain\Entity\Key $key = null)
+    {
+        $this->key = $key;
+
+        return $this;
+    }
+
+    /**
+     * Get key
+     *
+     * @return \Blockchain\Entity\Key 
+     */
+    public function getKey()
+    {
+        return $this->key;
+    }
+
+    /**
+     * Set redeemingInput
+     *
+     * @param \Blockchain\Entity\Input $redeemingInput
+     * @return Output
+     */
+    public function setRedeemingInput(\Blockchain\Entity\Input $redeemingInput = null)
+    {
+        $this->redeemingInput = $redeemingInput;
+
+        return $this;
+    }
+
+    /**
+     * Get redeemingInput
+     *
+     * @return \Blockchain\Entity\Transaction 
+     */
+    public function getRedeemingInput()
+    {
+        return $this->redeemingInput;
     }
 
     /**

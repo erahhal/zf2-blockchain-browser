@@ -17,6 +17,7 @@
         "doctrine/mongodb-odm": "dev-master",
         "doctrine/doctrine-mongo-odm-module": "dev-master",
         "zendframework/zftool": "dev-master",
-        "facebook/xhprof": "dev-master"
+        "facebook/xhprof": "dev-master",
+        "widmogrod/zf2-mustache-module": "dev-master"
     }
 }

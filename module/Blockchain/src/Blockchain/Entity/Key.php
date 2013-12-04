@@ -9,7 +9,12 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Entity
  * @ORM\Table(
-       name="Key",
+       name="`Key`",
+       uniqueConstraints={
+           @ORM\UniqueConstraint(name="hash160_unique",columns={"hash160"}),
+           @ORM\UniqueConstraint(name="address_unique",columns={"address"}),
+           @ORM\UniqueConstraint(name="pubkey_unique",columns={"pubkey"})
+       },
        indexes={
            @ORM\Index(name="hash160_idx", columns={"hash160"}),
            @ORM\Index(name="address_idx", columns={"address"}),
@@ -51,7 +56,7 @@ class Key
      * firstblock
      *
      * @ORM\ManyToOne(targetEntity="Block", fetch="LAZY")
-     * @ORM\JoinColumn(name="firstblockhash", referencedColumnName="blockhash")
+     * @ORM\JoinColumn(name="firstblock_id", referencedColumnName="id", nullable=false)
      */
     protected $firstblock;
 

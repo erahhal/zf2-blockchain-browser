@@ -1,0 +1,65 @@
+<h1>Block {{blocknumber}}</h1>
+
+<ul class="simpleList">
+    <li><span class="dataLabel">Hash:</span> {{blockhash}}</li>
+    <li><span class="dataLabel">Previous block:</span> <a href="/blockchain/block/hash/{{previousblockhash}}">{{previousblockhash}}</a></li>
+    <li><span class="dataLabel">Next block:</span> <a href="/blockchain/block/hash/{{nextblockhash}}">{{nextblockhash}}</a></li>
+    <li><span class="dataLabel">Time:</span> {{time}}</li>
+    <li><span class="dataLabel">Difficulty:</span> {{difficulty}} ("Bits": {{bits}})</li>
+    <li><span class="dataLabel">Transactions:</span> {{transactionCount}}</li>
+    <li><span class="dataLabel">Total BTC:</span> {{totalBTC}}</li>
+    <li><span class="dataLabel">Lost BTC:</span> {{lostBTC}}</li>
+    <li><span class="dataLabel">Offered Fees:</span> {{offeredFees}}</li>
+    <li><span class="dataLabel">Taken Fees:</span> {{takenFees}}</li>
+    <li><span class="dataLabel">Size:</span> {{size}} bytes</li>
+    <li><span class="dataLabel">Merkle root:</span> {{merkleroot}}</li>
+    <li><span class="dataLabel">Nonce:</span> {{nonce}}</li>
+    <li><span class="dataLabel">&nbsp;</span> <a href="/block/raw/{{blockhash}}">Raw block</a></li>
+</ul>
+
+<h2>Transactions</h2>
+<div class="txlistRow header">
+    <div class="transaction firstCol">Transaction</div>
+    <div class="fee">Fee</div>
+    <div class="size">Size (bytes)</div>
+    <div class="from">From (amount)</div>
+    <div class="to">To (amount)</div>
+</div>
+<div class="rowEnd"></div>
+{{#transactions}}
+<div class="txlistRow">
+    <div class="transaction firstCol"><a href="/blockchain/transaction/{{txid}}">{{txidTruncated}}</a></div>
+    <div class="fee">{{fee}}</div>
+    <div class="size">{{size}}</div>
+    <div class="from">
+        <ul class="simpleList">
+        {{#from}}
+            <li>
+            {{#isCoinbase}}
+                Generation: {{amount}}
+                {{#hasTakenFees}}
+                    + {{takenFees}} total fees
+                {{/hasTakenFees}}
+                {{#hasLostFees}}
+                    - {{takenFees}} lost BTC
+                {{/hasLostFees}}
+            {{/isCoinbase}}
+            {{^isCoinbase}}
+                <a href="/blockchain/address/{{address}}">{{address}}</a>: {{amount}}
+            {{/isCoinbase}}
+            </li>
+        {{/from}}
+        </ul>
+    </div>
+    <div class="to">
+        <ul class="simpleList">
+        {{#to}}
+            <li>
+                <a href="/blockchain/address/{{address}}">{{address}}</a>: {{amount}}
+            </li>
+        {{/to}}
+        </ul>
+    </div>
+</div>
+<div class="rowEnd"></div>
+{{/transactions}}

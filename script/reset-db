@@ -1,6 +1,6 @@
 #!/bin/sh
 DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-echo 'drop table `Key`; drop table Input; drop table Output; drop table Transaction; drop table Block; drop table User;' | mysql -u root -ps3ns89ui onrush
+echo 'SET FOREIGN_KEY_CHECKS = 0; DROP TABLE `Key`; DROP TABLE Input; DROP TABLE Output; DROP TABLE Transaction; DROP TABLE Block; DROP TABLE User;' | mysql -u root -ps3ns89ui onrush
 $DIR/generate-tables
 $DIR/clear-doctrine-cache

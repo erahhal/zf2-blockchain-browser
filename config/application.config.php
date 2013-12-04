@@ -14,7 +14,8 @@ return array(
         'BjyProfiler',
         'Application',
         'Blockchain',
-        'Profiler'
+        'Profiler',
+        'Mustache',
         ),
     'module_listener_options' => array(
         'module_paths' => array(

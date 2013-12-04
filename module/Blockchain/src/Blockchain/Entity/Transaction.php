@@ -50,11 +50,21 @@ class Transaction
     protected $inputs;
 
     /**
+     * @ORM\Column(type="bigint", nullable=true)
+     */
+    private $totalIn;
+
+    /**
      * outputs
      *
      * @ORM\OneToMany(targetEntity="Output", mappedBy="transaction", fetch="LAZY", cascade={"persist","remove"})
      */
     protected $outputs;
+
+    /**
+     * @ORM\Column(type="bigint", nullable=true)
+     */
+    private $totalOut;
 
     /**
      * @ORM\Column(type="integer")
@@ -290,6 +300,29 @@ class Transaction
     }
 
     /**
+     * Set totalIn
+     *
+     * @param bigint $totalIn
+     * @return Transaction
+     */
+    public function setTotalIn($totalIn)
+    {
+        $this->totalIn = $totalIn;
+
+        return $this;
+    }
+
+    /**
+     * Get totalIn
+     *
+     * @return bigint 
+     */
+    public function getTotalIn()
+    {
+        return $this->totalIn;
+    }
+
+    /**
      * Add outputs
      *
      * @param \Blockchain\Entity\Output $outputs
@@ -320,5 +353,28 @@ class Transaction
     public function getOutputs()
     {
         return $this->outputs;
+    }
+
+    /**
+     * Set totalOut
+     *
+     * @param bigint $totalOut
+     * @return Transaction
+     */
+    public function setTotalOut($totalOut)
+    {
+        $this->totalOut = $totalOut;
+
+        return $this;
+    }
+
+    /**
+     * Get totalOut
+     *
+     * @return bigint 
+     */
+    public function getTotalOut()
+    {
+        return $this->totalOut;
     }
 }

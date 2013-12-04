@@ -126,3 +126,111 @@ div.container a.brand {
 .txlistRow .to {
     width: 350px;
 }
+
+.inputlistRow {
+    border-bottom: 1px solid #888;
+    overflow: hidden;
+    width: 1100px;
+}
+.inputlistRow.alt {
+    background-color: blue;
+}
+.inputlistRow.header > div {
+    font-weight: bold;
+    border-top: 1px solid #888;
+}
+.inputlistRow > div {
+    height: 100%; 
+    float: left;
+}
+.inputlistRow .firstCol { 
+}
+.inputlistRow .prev {
+    width: 250px;
+}
+.inputlistRow .amount {
+    width: 100px;
+}
+.inputlistRow .from {
+    width: 310px;
+}
+.inputlistRow .type {
+    width: 100px;
+}
+.inputlistRow .scriptSig {
+    width: 340px;
+}
+
+.outputlistRow {
+    border-bottom: 1px solid #888;
+    overflow: hidden;
+    width: 1100px;
+}
+.outputlistRow.alt {
+    background-color: blue;
+}
+.outputlistRow.header > div {
+    font-weight: bold;
+    border-top: 1px solid #888;
+}
+.outputlistRow > div {
+    height: 100%; 
+    float: left;
+}
+.outputlistRow .firstCol { 
+}
+.outputlistRow .index {
+    width: 50px;
+}
+.outputlistRow .redeemedAt {
+    width: 200px;
+}
+.outputlistRow .amount {
+    width: 100px;
+}
+.outputlistRow .to {
+    width: 310px;
+}
+.outputlistRow .type {
+    width: 100px;
+}
+.outputlistRow .scriptPubKey {
+    width: 340px;
+}
+
+.addresstxlistRow {
+    border-bottom: 1px solid #888;
+    overflow: hidden;
+    width: 1100px;
+}
+.addresstxlistRow.alt {
+    background-color: blue;
+}
+.addresstxlistRow.header > div {
+    font-weight: bold;
+    border-top: 1px solid #888;
+}
+.addresstxlistRow > div {
+    height: 100%; 
+    float: left;
+}
+.addresstxlistRow .firstCol { 
+}
+.addresstxlistRow .transaction {
+    width: 220px;
+}
+.addresstxlistRow .block {
+    width: 250px;
+}
+.addresstxlistRow .amount {
+    width: 80px;
+}
+.addresstxlistRow .type {
+    width: 150px;
+}
+.addresstxlistRow .fromto {
+    width: 300px;
+}
+.addresstxlistRow .balance {
+    width: 100px;
+}

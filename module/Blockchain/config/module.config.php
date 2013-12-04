@@ -70,6 +70,32 @@ return array(
                             ),
                         ),
                     ),
+                    'transaction' => array(
+                        'type'    => 'Segment',
+                        'options' => array(
+                            'route'    => '/transaction/:txid',
+                            'constraints' => array(
+                                'txid' => '[\\xa-fA-F0-9]+',
+                            ),
+                            'defaults' => array(
+                                'controller' => 'Blockchain\Controller\Transaction',
+                                'action'     => 'index',
+                            ),
+                        ),
+                    ),
+                    'address' => array(
+                        'type'    => 'Segment',
+                        'options' => array(
+                            'route'    => '/address/:address',
+                            'constraints' => array(
+                                'address' => '[a-zA-Z0-9]+',
+                            ),
+                            'defaults' => array(
+                                'controller' => 'Blockchain\Controller\Address',
+                                'action'     => 'index',
+                            ),
+                        ),
+                    ),
                 ),
             ),
         ),
@@ -98,6 +124,7 @@ return array(
             // 'Blockchain\Controller\Index' => 'Blockchain\Controller\IndexController',
             // 'Blockchain\Controller\Block' => 'Blockchain\Controller\BlockController',
             // 'Blockchain\Controller\Transaction' => 'Blockchain\Controller\TransactionController',
+            // 'Blockchain\Controller\Address' => 'Blockchain\Controller\AddressController',
             // 'Blockchain\Controller\Chart' => 'Blockchain\Controller\ChartController',
         ),
     ),
@@ -115,6 +142,9 @@ return array(
         ),
         'template_path_stack' => array(
             __DIR__ . '/../view',
+        ),
+        'strategies' => array(
+            'Mustache\View\Strategy',
         ),
     ),
     'console' => array(

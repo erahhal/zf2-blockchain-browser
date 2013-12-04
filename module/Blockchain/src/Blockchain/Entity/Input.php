@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Table(
        name="Input",
        uniqueConstraints={
-           @ORM\UniqueConstraint(name="inputTxid_vout_unique",columns={"inputTxid", "vout"})
+           @ORM\UniqueConstraint(name="redeemedTxid_vout_unique",columns={"redeemedTxid", "vout"})
        },
        indexes={
            @ORM\Index(name="txid_idx", columns={"txid"}),
@@ -32,12 +32,20 @@ class Input
     /**
      * @ORM\Column(type="string", length=64, nullable=true)
      */
-    private $inputTxid;
+    private $txid;
 
     /**
      * @ORM\Column(type="string", length=64, nullable=true)
      */
-    private $txid;
+    private $redeemedTxid;
+
+    /**
+     * redeemedOutput
+     *
+     * @ORM\OneToOne(targetEntity="Output", fetch="LAZY")
+     * @ORM\JoinColumn(name="redeemed_output_id", referencedColumnName="id")
+     */
+    protected $redeemedOutput;
 
     /**
      * transaction
@@ -47,6 +55,15 @@ class Input
      * @ORM\JoinColumn(name="transaction_id", referencedColumnName="id")
      */
     protected $transaction;
+
+    /**
+     * key
+     * note: Doctrine requires join to be on primary id
+     *
+     * @ORM\ManyToOne(targetEntity="Key", fetch="LAZY")
+     * @ORM\JoinColumn(name="key_id", referencedColumnName="id")
+     */
+    protected $key;
 
     /**
      * @ORM\Column(type="integer")
@@ -90,8 +107,6 @@ class Input
      */
     private $address;
 
-
-
     /**
      * Get id
      *
@@ -103,26 +118,49 @@ class Input
     }
 
     /**
-     * Set inputTxid
+     * Set redeemedTxid
      *
-     * @param string $inputTxid
+     * @param string $redeemedTxid
      * @return Input
      */
-    public function setInputTxid($inputTxid)
+    public function setRedeemedTxid($redeemedTxid)
     {
-        $this->inputTxid = $inputTxid;
+        $this->redeemedTxid = $redeemedTxid;
 
         return $this;
     }
 
     /**
-     * Get inputTxid
+     * Get redeemedTxid
      *
      * @return string 
      */
-    public function getinputTxid()
+    public function getRedeemedTxid()
     {
-        return $this->inputTxid;
+        return $this->redeemedTxid;
+    }
+
+    /**
+     * Set redeemedOutput
+     *
+     * @param \Blockchain\Entity\Output $redeemedOutput
+     * @return Input
+     */
+    public function setRedeemedOutput(\Blockchain\Entity\Output $redeemedOutput = null)
+    {
+        $this->redeemedOutput = $redeemedOutput;
+
+        return $this;
+    }
+
+    /**
+     * Get redeemedOutput
+     *
+     * @return \Blockchain\Entity\Output 
+     */
+    public function getRedeemedOutput()
+    {
+        return $this->redeemedOutpu;
     }
 
     /**
@@ -353,5 +391,28 @@ class Input
     public function getTransaction()
     {
         return $this->transaction;
+    }
+
+    /**
+     * Set key
+     *
+     * @param \Blockchain\Entity\Key $key
+     * @return Output
+     */
+    public function setKey(\Blockchain\Entity\Key $key = null)
+    {
+        $this->key = $key;
+
+        return $this;
+    }
+
+    /**
+     * Get key
+     *
+     * @return \Blockchain\Entity\Key 
+     */
+    public function getKey()
+    {
+        return $this->key;
     }
 }

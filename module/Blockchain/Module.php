@@ -48,6 +48,11 @@ class Module
                     $controller = new \Blockchain\Controller\TransactionController($blockchain);
                     return $controller;
                 },
+                'Blockchain\Controller\Address' => function ($serviceManager) {
+                    $blockchain = $serviceManager->getServiceLocator()->get('Blockchain');
+                    $controller = new \Blockchain\Controller\AddressController($blockchain);
+                    return $controller;
+                },
                 'Blockchain\Controller\Chart' => function ($serviceManager) {
                     $blockchain = $serviceManager->getServiceLocator()->get('Blockchain');
                     $controller = new \Blockchain\Controller\ChartController($blockchain);

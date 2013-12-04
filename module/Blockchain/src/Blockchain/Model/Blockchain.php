@@ -4,6 +4,9 @@ namespace Blockchain\Model;
 
 class Blockchain
 {
+    protected static $hexChars = '0123456789ABCDEF';
+    protected static $base58chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+
     protected $objectManager;
     protected $bitcoindServerUrl;
 
@@ -16,6 +19,25 @@ class Blockchain
             $this->bitcoindServerUrl = $options['bitcoindServerUrl'];
         }
     }/*}}}*/
+
+    /* interesting queries:
+
+       Blocks with most transactions:
+       select b.blocknumber, count(*) as blockCount from Transaction t left join Block b on (t.block_id = b.id) group by t.block_id order by blockCount desc limit 10;
+
+       Transactions with most outputs:
+       select t.txid, count(*) as txCount from Output o left join Transaction t on (o.transaction_id = t.id) group by o.transaction_id order by txCount desc limit 10;
+
+       Transactions with most inputs:
+       select t.txid, count(*) as txCount from Input i left join Transaction t on (i.transaction_id = t.id) group by i.transaction_id order by txCount desc limit 10;
+
+       Addresses with most receives:
+       select k.address, count(*) addressCount from Output o left join `Key` k on (o.key_id = k.id) group by k.address order by addressCount desc limit 10;
+
+       Addresses with most sends:
+       select k.address, count(*) addressCount from Input i left join `Key` k on (i.key_id = k.id) where k.address is not NULL group by k.address order by addressCount desc limit 10;
+
+     */
 
     public function import()
     {/*{{{*/
@@ -31,20 +53,16 @@ class Blockchain
         echo "
 Todo:
 
-* This block's taken fees are messed up: http://local-dev.onru.sh/blockchain/block/number/127713
-* MOVE from floats to Satoshis (requires a big int library for PHP)
-* how to extract public keys
-* does block 0 have value and transactions
-* how to extract hash160
-* move code out of controller
+* detect if PHP is 64-bit, if not, check if GMP is installed, otherwise us BCMath
+  - ACTUALLY, just move to PHPSECLIB: http://phpseclib.sourceforge.net/math/intro.html 
+* move RPC calls into separate class
+* move bitcoin specific utils into separate class
+* move conversion from satoshis to floats into view model
+* fix trailing decimal point on whole numbers in block and blockchain views
 
-complete:
-* is flush called automatically at any point? (it appears that non-flushed changes are saved to DB on ctrl-c
-  - it appears that the persist call can flush at any moment
-* is flush is atomic (if not need to check if transactions, inputs, and outputs are complete for last block)
-  -  there are transactions but they seem like overkill for this use case
-  -  Will do a cascade delete of last block in the DB to deal with situations where partial imports occurred
+Maybe:
 
+* move entities to model binder?
 ";
 
         sleep(1);
@@ -69,8 +87,16 @@ complete:
             $block = $this->getBlockFromServer($blockhash);
 
             // remove last block and all associated transactions in case it wasn't loaded full or there was no "nextblockhash"
+            $connection = $this->objectManager->getConnection();
+            if ($connection->getDatabasePlatform()->getName() == 'mysql') {
+                // The input and output tables have cyclical foreign keys, so rows can't be deleted
+                $connection->query('SET FOREIGN_KEY_CHECKS=0'); 
+            }
             $this->objectManager->remove($blockEntity);
             $this->objectManager->flush();
+            if ($connection->getDatabasePlatform()->getName() == 'mysql') {
+                $connection->query('SET FOREIGN_KEY_CHECKS=1'); 
+            }
             
             $coinbaseExp = floor($blockNumber / 210000);
             $gmp_coinbaseValue = gmp_div_q(gmp_init("5000000000"), gmp_pow(gmp_init("2"), $coinbaseExp));
@@ -124,6 +150,7 @@ complete:
             // First block is unique
             if ($blockNumber > 0) {
                 $seenTxids = array();
+                $seenAddresses = array();
                 foreach ($block['tx'] as $txid) {
                     // the JSON RPC client appears to have a memory leak, so isolate it inside a function
                     $transaction = $this->getRawTransactionFromServer($txid);
@@ -146,6 +173,7 @@ complete:
 
                     $transactionEntity = new \Blockchain\Entity\Transaction();
                     $transactionEntity->setTxid($transaction['txid']);
+                    $transactionEntity->setBlockhash($blockhash);
                     $transactionEntity->setBlock($blockEntity);
                     $transactionEntity->setVersion($transaction['version']);
                     $transactionEntity->setLocktime($transaction['locktime']);
@@ -167,21 +195,72 @@ complete:
                             if (isset($seenTxids[$input['txid']])) {
                                 // input of one transaction is referencing the output of another transaction in the same block.  flush writes.
                                 $this->objectManager->flush();
+                                // clear objects to free memory
                                 $this->objectManager->clear();
+                                // reload associated entities
                                 $blockEntity = $this->objectManager->getRepository('Blockchain\Entity\Block')->findOneBy(array('blockhash' => $blockhash));
                                 $transactionEntity = $this->objectManager->getRepository('Blockchain\Entity\Transaction')->findOneBy(array('txid' => $txid));
                             }
-                            $inputEntity->setInputTxid($input['txid']);
+                            $inputEntity->setRedeemedTxid($input['txid']);
                             $inputEntity->setScriptSigAsm($input['scriptSig']['asm']);
                             $inputEntity->setScriptSigHex($input['scriptSig']['hex']);
+                            $pubkey = null;
+                            $hash160 = null;
+                            $address = null;
+                            if (preg_match('/(.+) (.+)/', $input['scriptSig']['asm'], $matches)) {
+
+                                // Standard Transaction to Bitcoin address (pay-to-pubkey-hash)
+                                // scriptPubKey: OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG
+                                // scriptSig: <sig> <pubKey>
+                                
+                                $signature = $matches[1];
+                                $pubkey = $matches[2];
+                                $hash160 = self::pubkeyToHash160($pubkey);
+                                $address = self::hash160ToAddress($hash160);
+                                $keyEntity = $this->objectManager->getRepository('Blockchain\Entity\Key')->findOneBy(array('address' => $address));
+                                if (!$keyEntity) {
+                                    if (!isset($seenAddresses[$address])) {
+                                        $keyEntity = new \Blockchain\Entity\Key(); 
+                                        $keyEntity->setPubkey($pubkey);
+                                        $keyEntity->setHash160($hash160);
+                                        $keyEntity->setAddress($address);
+                                        $keyEntity->setFirstblockhash($blockhash);
+                                        $keyEntity->setFirstblock($blockEntity);
+                                        $this->objectManager->persist($keyEntity);
+                                        $seenAddresses[$address] = array('pubkey' => $pubkey);
+                                    } else {
+                                        $this->objectManager->flush();
+                                        $keyEntity = $this->objectManager->getRepository('Blockchain\Entity\Key')->findOneBy(array('address' => $address));
+                                        if (!$keyEntity) {
+                                            die("problem finding input key: $address\n");
+                                        }
+                                    }
+                                }
+
+                                $inputEntity->setKey($keyEntity);
+                            } else if (preg_match('/([\S]+)/', $input['scriptSig']['asm'])) {
+
+                                // Standard Generation Transaction (pay-to-pubkey)
+                                // scriptPubKey: <pubKey> OP_CHECKSIG
+                                // scriptSig: <sig>
+ 
+                            } else {
+                                die("strange scriptSig: ".$input['scriptSig']['asm']."\n");
+                            }
+
+                            $inputEntity->setHash160($hash160);
+                            $inputEntity->setAddress($address);
                             $inputEntity->setVout($input['vout']);
-                            $previousOutputEntity = $this->objectManager->getRepository('Blockchain\Entity\Output')->findOneBy(array('txid' => $input['txid'], 'n' => $input['vout']));
-                            if (!$previousOutputEntity) {
+                            $redeemedOutputEntity = $this->objectManager->getRepository('Blockchain\Entity\Output')->findOneBy(array('txid' => $input['txid'], 'n' => $input['vout']));
+                            if (!$redeemedOutputEntity) {
                                 die('could not find output');
                             }
-                            $gmp_inputValue = gmp_init($previousOutputEntity->getValue());
+                            $gmp_inputValue = gmp_init($redeemedOutputEntity->getValue());
                             $inputEntity->setValue(gmp_strval($gmp_inputValue));
-                            $inputEntity->setAddress($previousOutputEntity->getAddress());
+                            $inputEntity->setAddress($redeemedOutputEntity->getAddress());
+                            $inputEntity->setRedeemedOutput($redeemedOutputEntity);
+                            $redeemedOutputEntity->setRedeemingInput($inputEntity);
+                            $this->objectManager->persist($redeemedOutputEntity);
                             $gmp_totalInputValue = gmp_add($gmp_totalInputValue, gmp_init($inputEntity->getValue()));
                             echo 'txid: '.$txid.', input txid: '.$input['txid'].', vout: '.$input['vout'].", val: ".gmp_strval($gmp_inputValue)."\n";
                             // Need to figure out how to extract hash160, if it is of any value...
@@ -199,37 +278,79 @@ complete:
                         $outputEntity = new \Blockchain\Entity\Output();
                         $outputEntity->setTxid($txid);
                         $outputEntity->setN($output['n']);
-                        $gmp_outputValue = $this->floatBTCToGmpSatoshis($output['value']);
+                        $gmp_outputValue = self::floatBTCToGmpSatoshis($output['value']);
                         $outputEntity->setValue(gmp_strval($gmp_outputValue));
                         $gmp_totalOutputValue = gmp_add($gmp_totalOutputValue, $gmp_outputValue);
                         $outputEntity->setScriptPubKeyAsm($output['scriptPubKey']['asm']);
                         $outputEntity->setScriptPubKeyHex($output['scriptPubKey']['hex']);
+                        $pubkey = null;
+                        $hash160 = null;
+                        $address = null;
+                        if (preg_match('/^OP_DUP OP_HASH160 ([\S]+) OP_EQUALVERIFY OP_CHECKSIG$/', $output['scriptPubKey']['asm'], $matches)) {
+                            $hash160 = $matches[1];
+                            $address = self::hash160ToAddress($hash160);
+                        } else if (preg_match('/^([\S]+) OP_CHECKSIG$/', $output['scriptPubKey']['asm'], $matches)) {
+                            $pubkey = $matches[1];
+                            $hash160 = self::pubkeyToHash160($pubkey);
+                            $address = self::hash160ToAddress($hash160);
+                        }
+                        if ($address) {
+                            $keyEntity = $this->objectManager->getRepository('Blockchain\Entity\Key')->findOneBy(array('address' => $address));
+                            if (!$keyEntity && !isset($seenAddresses[$address])) {
+                                $keyEntity = new \Blockchain\Entity\Key(); 
+                                $keyEntity->setPubkey($pubkey);
+                                $keyEntity->setHash160($hash160);
+                                $keyEntity->setAddress($address);
+                                $keyEntity->setFirstblockhash($blockhash);
+                                $keyEntity->setFirstblock($blockEntity);
+                                $seenAddresses[$address] = array('pubkey' => $pubkey);
+                            }
+                            if ($keyEntity) {
+                                if ($pubkey && !($keyEntity->getPubkey())) {
+                                    $keyEntity->setPubkey($pubkey);
+                                }
+
+                                $this->objectManager->persist($keyEntity);
+                                $outputEntity->setKey($keyEntity);
+                            }
+                            if (!$keyEntity && $pubkey && !$seenAddresses[$address]['pubkey'])
+                            {
+                                die ("Situation: address seen multiple times in transaction, and pubkey available\n");
+                            }
+                        }
+                        $outputEntity->setHash160($hash160);
                         if (isset($output['scriptPubKey']['reqSigs'])) {
                             $outputEntity->setReqSigs($output['scriptPubKey']['reqSigs']);
                         }
                         $outputEntity->setType($output['scriptPubKey']['type']);
+                        if (count($output['scriptPubKey']['addresses']) > 1) {
+                            echo "output with multiple addresses found:\n";
+                            echo print_r($output, true);
+                            die();
+                        }
+                        if ($address && $address != $output['scriptPubKey']['addresses'][0]) {
+                            die ("inconsistent output addresses\n    parsed: $address\n    given: {$output['scriptPubKey']['addresses'][0]}\n");
+                        }
                         $outputEntity->setAddress($output['scriptPubKey']['addresses'][0]);
-                        // Need to figure out how to extract hash160, if it is of any value...
-                        // $outputEntity->setHash160();
+                        $outputEntity->setHash160($hash160);
                         $outputEntity->setTransaction($transactionEntity);
                         $this->objectManager->persist($outputEntity);
                         $count++;
                     }
 
                     if (isset($input['coinbase'])) {
-                        echo "totalOutputValue: ".gmp_strval($gmp_totalOutputValue).", coinbaseValue: ".gmp_strval($gmp_coinbaseValue)."\n";
                         $gmp_takenFees = gmp_sub($gmp_totalOutputValue, $gmp_coinbaseValue);
                     }
 
                     if (!isset($input['coinbase'])) {
-                        echo "totalInputValue: ".gmp_strval($gmp_totalInputValue).", totalOutputValue: ".gmp_strval($gmp_totalOutputValue)."\n";
                         $gmp_fee = gmp_sub($gmp_totalInputValue, $gmp_totalOutputValue);
-                        echo "fee: ".gmp_strval($gmp_fee)."\n";
                         $gmp_offeredFees = gmp_add($gmp_offeredFees, $gmp_fee);
                     } else {
                         $gmp_fee = gmp_init("0");
                     }
                     $transactionEntity->setFee(gmp_strval($gmp_fee));
+                    $transactionEntity->setTotalIn(gmp_strval($gmp_totalInputValue));
+                    $transactionEntity->setTotalOut(gmp_strval($gmp_totalOutputValue));
                     $this->objectManager->persist($transactionEntity);
                     $count++;
 
@@ -281,13 +402,14 @@ complete:
         if (count($result)) {
             foreach ($result as $blockEntity) {
                 $blockList[] = array(
-                    'number' => $blockEntity->getBlockNumber(),
+                    'blocknumber' => $blockEntity->getBlockNumber(),
                     'blockhash' => $blockEntity->getBlockhash(),
+                    'blockhashTruncated' => substr($blockEntity->getBlockhash(), 0, 25).'...',
                     'time' => $blockEntity->getTime()->format('Y-m-d H:i:s'),
                     'transactionCount' => $blockEntity->getTransactions()->count(),
-                    'totalBTC' => $this->GmpSatoshisToFloatBTC(gmp_init($blockEntity->getTotalvalue())),
-                    'offeredFees' => $this->GmpSatoshisToFloatBTC(gmp_init($blockEntity->getOfferedFees())),
-                    'takenFees' => $this->GmpSatoshisToFloatBTC(gmp_init($blockEntity->getTakenFees())),
+                    'totalBTC' => self::gmpSatoshisToFloatBTC(gmp_init($blockEntity->getTotalvalue())),
+                    'offeredFees' => self::gmpSatoshisToFloatBTC(gmp_init($blockEntity->getOfferedFees())),
+                    'takenFees' => self::gmpSatoshisToFloatBTC(gmp_init($blockEntity->getTakenFees())),
                     'size' => $blockEntity->getSize()
                 );
             }
@@ -314,22 +436,29 @@ complete:
         foreach ($blockEntity->getTransactions() as $transactionEntity) {
             $transaction = array(
                 'txid' => $transactionEntity->getTxid(),
-                'fee' => $this->GmpSatoshisToFloatBTC(gmp_init($transactionEntity->getFee())),
+                'txidTruncated' => substr($transactionEntity->getTxid(), 0, 25).'...',
+                'fee' => self::gmpSatoshisToFloatBTC(gmp_init($transactionEntity->getFee())),
                 'size' => $transactionEntity->getSize(),
                 'from' => array(),
                 'to' => array()
             );
             foreach ($transactionEntity->getInputs() as $inputEntity) {
                 if ($inputEntity->getCoinbase()) {
+                    $amount = self::gmpSatoshisToFloatBTC(gmp_init($inputEntity->getValue()));
+                    $takenFees = self::gmpSatoshisToFloatBTC(gmp_init($blockEntity->getTakenFees()));
                     $input = array(
+                        'isCoinbase' => true,
                         'type' => 'coinbase',
-                        'amount' => $this->GmpSatoshisToFloatBTC(gmp_init($inputEntity->getValue())),
-                        'takenFees' => $blockEntity->getTakenFees()
+                        'amount' => self::gmpSatoshisToFloatBTC(gmp_init($inputEntity->getValue())),
+                        'takenFees' => self::gmpSatoshisToFloatBTC(gmp_init($blockEntity->getTakenFees())),
+                        'hasTakenFees' => $takenFees > 0,
+                        'hasLostFees' => $takenFees < 0,
                     );
                 } else {
                     $input = array(
+                        'isCoinbase' => false,
                         'type' => 'pubkey',
-                        'amount' => $this->GmpSatoshisToFloatBTC(gmp_init($inputEntity->getValue())),
+                        'amount' => self::gmpSatoshisToFloatBTC(gmp_init($inputEntity->getValue())),
                         'address' => $inputEntity->getAddress()
                     );
                 }
@@ -337,7 +466,7 @@ complete:
             }
             foreach ($transactionEntity->getOutputs() as $outputEntity) {
                 $output = array(
-                    'amount' => $this->GmpSatoshisToFloatBTC(gmp_init($outputEntity->getValue())),
+                    'amount' => self::gmpSatoshisToFloatBTC(gmp_init($outputEntity->getValue())),
                     'address' => $outputEntity->getAddress()
                 );
                 $transaction['to'][] = $output;
@@ -357,10 +486,10 @@ complete:
             'merkleroot' => $blockEntity->getMerkleroot(),
             'time' => $blockEntity->getTime()->format('Y-m-d H:i:s'),
             'transactionCount' => $blockEntity->getTransactions()->count(),
-            'totalBTC' => $this->GmpSatoshisToFloatBTC(gmp_init($blockEntity->getTotalvalue())),
-            'lostBTC' => $this->GmpSatoshisToFloatBTC(gmp_init($blockEntity->getLostValue())),
-            'offeredFees' => $this->GmpSatoshisToFloatBTC(gmp_init($blockEntity->getOfferedFees())),
-            'takenFees' => $this->GmpSatoshisToFloatBTC(gmp_init($blockEntity->getTakenFees())),
+            'totalBTC' => $this->gmpSatoshisToFloatBTC(gmp_init($blockEntity->getTotalvalue())),
+            'lostBTC' => self::gmpSatoshisToFloatBTC(gmp_init($blockEntity->getLostValue())),
+            'offeredFees' => self::gmpSatoshisToFloatBTC(gmp_init($blockEntity->getOfferedFees())),
+            'takenFees' => self::gmpSatoshisToFloatBTC(gmp_init($blockEntity->getTakenFees())),
             'size' => $blockEntity->getSize(),
             'transactions' => $transactions
         );
@@ -368,14 +497,239 @@ complete:
         return $blockData;
     }/*}}}*/
 
-    // converts BTC values in floating point to Satoshies in PHP GMP (Gnu Multiple Precision)
-    public function floatBTCToGmpSatoshis($value)
+    public function getTransaction($txid)
+    {/*{{{*/
+        $transactionEntity = $this->objectManager->getRepository('Blockchain\Entity\Transaction')->findOneBy(array('txid' => $txid));
+        return $this->getTransactionData($transactionEntity);
+    }/*}}}*/
+
+    protected function getTransactionData($transactionEntity)
+    {/*{{{*/
+        $blockEntity = $transactionEntity->getBlock();
+
+        $inputs = array();
+        $isCoinbase = false;
+        foreach ($transactionEntity->getInputs() as $inputEntity) {
+            $input = array(
+                'isCoinbase' => false,
+                'amount' => self::gmpSatoshisToFloatBTC(gmp_init($inputEntity->getValue())),
+                'scriptSig' => $inputEntity->getScriptSigAsm()
+            );
+            if ($inputEntity->getCoinbase()) {
+                $input['isCoinbase'] = true;
+                $input['type'] = 'Generation';
+                $input['scriptSig'] = $inputEntity->getCoinbase();
+                if ($blockEntity->getTakenFees()) {
+                    $input['amount'] = $input['amount'] . ' + ' . self::gmpSatoshisToFloatBTC(gmp_init($blockEntity->getTakenFees())) . ' fees';
+                }
+            } else {
+                $input = array_merge($input, array(
+                    'previousTxid' => $inputEntity->getRedeemedTxid(),
+                    'previousTxidTruncated' => substr($inputEntity->getRedeemedTxid(), 0, 25).'...',
+                    'vout' => $inputEntity->getVout(),
+                    'fromAddress' => $inputEntity->getAddress(),
+                    'type' => 'pubkey',
+                ));
+            }
+
+            $inputs[] = $input;
+        }
+
+        $outputs = array();
+        foreach ($transactionEntity->getOutputs() as $outputEntity) {
+            $redeemingInput = $outputEntity->getRedeemingInput();
+            if ($redeemingInput) {
+                $redeemedAt = $redeemingInput->getTxid();
+                $redeemedAtTruncated = substr($redeemedAt, 0, 15).'...';
+            } else {
+                $redeemedAt = null;
+                $redeemedAtTruncated = null;
+            }
+            $output = array(
+                'index' => $outputEntity->getN(),
+                'redeemedAt' => $redeemedAt,
+                'redeemedAtTruncated' => $redeemedAtTruncated,
+                'amount' => self::gmpSatoshisToFloatBTC(gmp_init($outputEntity->getValue())),
+                'address' => $outputEntity->getAddress(),
+                'type' => $outputEntity->getType(),
+                'scriptPubKey' => $outputEntity->getScriptPubKeyAsm(),
+            );
+            $outputs[] = $output;
+        }
+
+        $transactionData = array(
+            'txid' => $transactionEntity->getTxid(),
+            'blocknumber' => $blockEntity->getBlocknumber(),
+            'blocktime' => $blockEntity->getTime()->format('Y-m-d H:i:s'),
+            'inputCount' => $transactionEntity->getInputs()->count(),
+            'totalIn' => self::gmpSatoshisToFloatBTC(gmp_init($transactionEntity->getTotalIn())),
+            'outputCount' => $transactionEntity->getOutputs()->count(),
+            'totalOut' => self::gmpSatoshisToFloatBTC(gmp_init($transactionEntity->getTotalOut())),
+            'size' => $transactionEntity->getSize(),
+            'inputs' => $inputs,
+            'outputs' => $outputs,
+        );
+
+        if ($isCoinbase) {
+            $transactionData['fee'] = - self::gmpSatoshisToFloatBTC(gmp_init($blockEntity->getTakenFees()));
+        } else {
+            $transactionData['fee'] = self::gmpSatoshisToFloatBTC(gmp_init($transactionEntity->getFee()));
+        }
+
+        return $transactionData;
+    }/*}}}*/
+
+    public function getAddressInfo($address)
+    {/*{{{*/
+        $keyEntity = $this->objectManager->getRepository('Blockchain\Entity\Key')->findOneBy(array('address' => $address));
+        return $this->getAddressData($keyEntity);
+    }/*}}}*/
+
+    protected function getAddressData($keyEntity)
+    {/*{{{*/
+        $query = $this->objectManager->createQuery('
+                SELECT o FROM Blockchain\Entity\Output o
+                LEFT JOIN o.key k
+                WHERE k.address = :address')
+            ->setParameter('address', $keyEntity->getAddress());
+
+        $results = $query->getResult();
+        $transactions = array();
+
+        $receivedCount = 0;
+        foreach ($results as $outputEntity) {
+            $transactionEntity = $outputEntity->getTransaction();
+            $blockEntity = $transactionEntity->getBlock();
+            $output = array(
+                'id' => $outputEntity->getId(),
+                'txid' => $outputEntity->getTxid(),
+                'txidTruncated' => substr($outputEntity->getTxid(), 0, 25).'...',
+                'txType' => 'received',
+                'blocknumber' => $blockEntity->getBlocknumber(),
+                'blocktime' => $blockEntity->getTime()->getTimestamp(),
+                'blocktimeFormatted' => $blockEntity->getTime()->format('Y-m-d H:i:s'),
+                'amountSatoshis' => $outputEntity->getValue(),
+                'amount' => self::gmpSatoshisToFloatBTC(gmp_init($outputEntity->getValue())),
+                'type' => ($outputEntity->getType() == 'pubkeyhash' ? 'Address' : ucfirst($outputEntity->getType())),
+                'from' => array()
+            );
+            foreach ($transactionEntity->getInputs() as $inputEntity) {
+                if ($inputEntity->getCoinbase()) {
+                    $output['from'][] = array(
+                        'isGeneration' => true,
+                    );
+                } else {
+                    $output['from'][] = array(
+                        'isGeneration' => false,
+                        'address' => $inputEntity->getKey()->getAddress(),
+                    );
+                }
+            }
+
+            $transactions[] = $output;
+            $receivedCount++;
+        }
+
+        $query = $this->objectManager->createQuery('
+                SELECT i FROM Blockchain\Entity\Input i
+                LEFT JOIN i.key k
+                WHERE k.address = :address')
+            ->setParameter('address', $keyEntity->getAddress());
+
+        $results = $query->getResult();
+
+        $sentCount = 0;
+        foreach ($results as $inputEntity) {
+            $transactionEntity = $inputEntity->getTransaction();
+            $blockEntity = $transactionEntity->getBlock();
+            $input = array(
+                'id' => $inputEntity->getId(),
+                'txid' => $inputEntity->getTxid(),
+                'txidTruncated' => substr($inputEntity->getTxid(), 0, 25).'...',
+                'txType' => 'sent',
+                'blocknumber' => $blockEntity->getBlocknumber(),
+                'blocktime' => $blockEntity->getTime()->getTimestamp(),
+                'blocktimeFormatted' => $blockEntity->getTime()->format('Y-m-d H:i:s'),
+                'amountSatoshis' => $inputEntity->getValue(),
+                'amount' => self::gmpSatoshisToFloatBTC(gmp_init($inputEntity->getValue())),
+                'type' => 'Address',
+                'to' => array()
+            );
+            foreach ($transactionEntity->getOutputs() as $outputEntity) {
+                $input['to'][] = array(
+                    'isGeneration' => false,
+                    'address' => $outputEntity->getKey()->getAddress(),
+                );
+            }
+            $transactions[] = $input;
+            $sentCount++;
+        }
+
+        usort($transactions, function($a, $b) {
+            if ($a['blocktime'] == $b['blocktime']) {
+                if ($a['txType'] == $b['txType']) {
+                    return ($a['id'] - $b['id']);
+                }
+                
+                switch ($a['type']) {
+                    case 'received':
+                        return 1;
+                        break;
+                    case 'sent':
+                        return -1;
+                        break;
+                    default:
+                        return 0;
+                    break;
+                }
+            }
+
+            return ($a['blocktime'] - $b['blocktime']);
+        });
+
+        $balance = gmp_init('0');
+        foreach($transactions as &$transaction) {
+            switch($transaction['txType']) {
+                case 'received':
+                    $balance = gmp_add($balance, gmp_init($transaction['amountSatoshis']));
+                    break;
+                case 'sent':
+                    $balance = gmp_sub($balance, gmp_init($transaction['amountSatoshis']));
+                    break;
+                default:
+                    die($transaction['txType']);
+                    break;
+            }
+            $transaction['balance'] = self::gmpSatoshisToFloatBTC($balance);
+        }
+
+        $addressData = array(
+            'firstseen' => $keyEntity->getFirstblock()->getTime()->format('Y-m-d H:i:s'),
+            'receivedTransactions' => $receivedCount,
+            'receivedBTC' => 'TBD',
+            'sentTransactions' => $sentCount,
+            'sentBTC' => 'TBD',
+            'hash160' => $keyEntity->getHash160(),
+            'pubkey' => $keyEntity->getPubkey(),
+            'transactions' => $transactions,
+        );
+
+        return $addressData;
+    }/*}}}*/
+
+
+/* ---------------------------------------------------------------------------------------------
+   Bitcoind RPC Functions
+--------------------------------------------------------------------------------------------- */
+
+    // converts BTC values in floating point to Satoshies in GMP (Gnu Multiple Precision)
+    static public function floatBTCToGmpSatoshis($value)
     {/*{{{*/
         // convert to string
         $valueString = "$value";
         if (preg_match('/[\.E]/', $valueString)) {
             $valueString = sprintf('%.8F', $value);
-            $valueString = trim($valueString, '0');
+            $valueString = rtrim($valueString, '0');
         }
 
         // get rid of leading zeros.  GMP interprets leading 0's to mean that the number is octal
@@ -408,16 +762,132 @@ complete:
         // increase order of magnitude to convert to Satoshis
         $gmp_value = gmp_mul($gmp_value, $gmp_multiplier);
         
-        echo "[DEBUG] float: $value, GMP: ".gmp_strval($gmp_value)."\n";
         return $gmp_value;
     }/*}}}*/
 
-    public function GmpSatoshisToFloatBTC($value)
+    // converts Satoshies in GMP (Gnu Multiple Precision) to BTC values in floating point
+    static public function gmpSatoshisToFloatBTC($value)
     {/*{{{*/
         $result = gmp_div_qr($value, gmp_init('100000000'));
-        $btc = floatval(gmp_strval($result[0]).'.'.gmp_strval($result[1]));
+        $whole = gmp_strval($result[0]);
+        $fraction = sprintf('%08s', gmp_strval($result[1]));
+        $btc = floatval("$whole.$fraction");
         return $btc;
     }/*}}}*/
+
+    // Converts base16 string to Base10 string
+    static public function base16ToBase10($hexString)
+    {/*{{{*/
+        $hexString = strtoupper($hexString);
+        $retVal = '0';
+        $length = strlen($hexString);
+        for ($i = 0; $i < $length; $i++) {
+            $current = (string) strpos(self::$hexChars, $hexString[$i]);
+            $retVal = (string) bcmul($retVal, '16', 0);
+            $retVal = (string) bcadd($retVal, $current, 0);
+        }
+        return $retVal;
+    }/*}}}*/
+
+    static public function base10ToBase16($decString)
+    {/*{{{*/
+        $retVal = '';
+        while (bccomp($decString, 0) == 1) {
+            $dv = (string) bcdiv($decString, '16', 0);
+            $rem = (integer) bcmod($decString, '16');
+            $dec = $dv;
+            $retVal = $retVal . self::$hexChars[$rem];
+        }
+        return strrev($retVal);
+    }/*}}}*/
+
+    // Converts base16 string encoded binary data into a base58 string
+    static public function base256ToBase58($hexString)
+    {/*{{{*/
+        if (strlen($hexString) % 2 != 0) {
+            throw new Exception('hex string must have even number of characters');
+        }
+
+        $decString = self::base16ToBase10($hexString);
+        $retVal = '';
+        while (bccomp($decString, 0) == 1) {
+            $dv = (string) bcdiv($decString, '58', 0);
+            $rem = (integer) bcmod($decString, '58');
+            $decString = $dv;
+            $retVal = $retVal . self::$base58chars[$rem];
+        }
+        $retVal = strrev($retVal);
+
+        // Add leading zeros
+        for ($i = 0; $i < strlen($hexString) && substr($hexString, $i, 2) == '00'; $i += 2) {
+            $retVal = '1' . $retVal;
+        }
+
+        return $retVal;
+    }/*}}}*/
+
+    static public function base58ToBase256($encodedString)
+    {/*{{{*/
+        if (preg_match('/[^1-9A-HJ-NP-Za-km-z]/', $encodedString)) {
+            throw new Exception('illegal characters detected');
+        }
+
+        $retVal = '0';
+        $length = strlen($encodedString);
+        for ($i = 0; $i < $length; $i++) {
+            $current = (string) strpos(self::$base58chars, $encodedString[$i]);
+            $retVal = (string) bcmul($retVal, '58', 0);
+            $retVal = (string) bcadd($retVal, $current, 0);
+        }
+
+        $retVal = self::base10ToBase16($retVal);
+
+        // Remove leading zeros
+        for ($i = 0; $i < $length && $encodedString[$i] == '1'; $i++) {
+            $retVal = '00' . $retVal;
+        }
+
+        if (strlen($retVal) % 2 != 0) {
+            $return = '0' . $retVal;
+        }
+
+        return $retVal;
+    }/*}}}*/
+
+    // See: https://en.bitcoin.it/w/images/en/9/9b/PubKeyToAddr.png
+
+    // Converts Pubkey into bitcoin hash160 and address
+    static public function pubkeyToHash160($pubkey)
+    {/*{{{*/
+        // prepend 0x04 (why?)
+        $string = '04'.$pubkey;
+        // only php 5.4 and above support hex2bin
+        $binary = pack('H*', $pubkey);
+        // hash key
+        $hash160 = hash('ripemd160', hash('sha256', $binary, true));
+
+        return $hash160;
+    }/*}}}*/
+
+    // Converts hash160 into address
+    static public function hash160ToAddress($hash160)
+    {/*{{{*/
+        // Get value to checksum
+        $hash = '00'.$hash160;
+        $binary = pack('H*', $hash);
+        // get the checksum
+        $binaryChecksum = hash('sha256', hash('sha256', $binary, true), true);
+        $binaryAddress = $binary . substr($binaryChecksum, 0, 4);
+        $unpacked = unpack('H*', $binaryAddress);
+        $addressHex = $unpacked[1];
+        $address = self::base256ToBase58($addressHex);
+
+        return $address;
+    }/*}}}*/
+
+/* ---------------------------------------------------------------------------------------------
+   Bitcoind RPC Functions
+--------------------------------------------------------------------------------------------- */
 
     // the JSON RPC client appears to have a memory leak, so isolate it inside a function
     protected function getBlockFromServer($hash)
