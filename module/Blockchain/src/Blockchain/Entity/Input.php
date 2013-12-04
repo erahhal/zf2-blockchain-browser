@@ -60,7 +60,7 @@ class Input
      * key
      * note: Doctrine requires join to be on primary id
      *
-     * @ORM\ManyToOne(targetEntity="Key", fetch="LAZY")
+     * @ORM\ManyToOne(targetEntity="Key", fetch="LAZY", cascade={"persist"})
      * @ORM\JoinColumn(name="key_id", referencedColumnName="id")
      */
     protected $key;

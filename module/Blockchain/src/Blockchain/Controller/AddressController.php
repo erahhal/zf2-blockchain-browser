@@ -18,7 +18,7 @@ class AddressController extends AbstractActionController
     {/*{{{*/
         $address = $this->params('address');
 
-        $addressData = $this->_blockchain->getAddressInfo($address);
+        $addressData = $this->_blockchain->getAddressActivity($address);
 
         $view = new ViewModel($addressData);
 

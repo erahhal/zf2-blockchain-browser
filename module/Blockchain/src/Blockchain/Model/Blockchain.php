@@ -204,6 +204,12 @@ Maybe:
                             $inputEntity->setRedeemedTxid($input['txid']);
                             $inputEntity->setScriptSigAsm($input['scriptSig']['asm']);
                             $inputEntity->setScriptSigHex($input['scriptSig']['hex']);
+                            $inputEntity->setVout($input['vout']);
+                            $redeemedOutputEntity = $this->objectManager->getRepository('Blockchain\Entity\Output')->findOneBy(array('txid' => $input['txid'], 'n' => $input['vout']));
+                            if (!$redeemedOutputEntity) {
+                                die('could not find output');
+                            }
+
                             $pubkey = null;
                             $hash160 = null;
                             $address = null;
@@ -218,47 +224,48 @@ Maybe:
                                 $pubkey = $matches[2];
                                 $hash160 = self::pubkeyToHash160($pubkey);
                                 $address = self::hash160ToAddress($hash160);
-                                $keyEntity = $this->objectManager->getRepository('Blockchain\Entity\Key')->findOneBy(array('address' => $address));
-                                if (!$keyEntity) {
-                                    if (!isset($seenAddresses[$address])) {
-                                        $keyEntity = new \Blockchain\Entity\Key(); 
-                                        $keyEntity->setPubkey($pubkey);
-                                        $keyEntity->setHash160($hash160);
-                                        $keyEntity->setAddress($address);
-                                        $keyEntity->setFirstblockhash($blockhash);
-                                        $keyEntity->setFirstblock($blockEntity);
-                                        $this->objectManager->persist($keyEntity);
-                                        $seenAddresses[$address] = array('pubkey' => $pubkey);
-                                    } else {
-                                        $this->objectManager->flush();
-                                        $keyEntity = $this->objectManager->getRepository('Blockchain\Entity\Key')->findOneBy(array('address' => $address));
-                                    }
-                                }
-
-                                if (!$keyEntity) {
-                                    die("problem finding input key: $address\n");
-                                }
-                                $inputEntity->setKey($keyEntity);
                             } else if (preg_match('/([\S]+)/', $input['scriptSig']['asm'])) {
 
                                 // Standard Generation Transaction (pay-to-pubkey)
                                 // scriptPubKey: <pubKey> OP_CHECKSIG
                                 // scriptSig: <sig>
- 
+
+                                $redeemedOutputKeyEntity = $redeemedOutputEntity->getKey();
+                                if ($redeemedOutputKeyEntity) {
+                                    $pubkey = $redeemedOutputKeyEntity->getPubkey();
+                                    $hash160 = $redeemedOutputKeyEntity->getHash160();
+                                    $address = $redeemedOutputKeyEntity->getAddress();
+                                } else {
+                                    die("Standard Generation without key\n");
+                                }
                             } else {
                                 die("strange scriptSig: ".$input['scriptSig']['asm']."\n");
                             }
 
-                            if ($address && !$keyEntity) {
-                                die("Input key entity not generated: $address\n");
+                            $keyEntity = $this->objectManager->getRepository('Blockchain\Entity\Key')->findOneBy(array('address' => $address));
+                            if (!$keyEntity) {
+                                if (!isset($seenAddresses[$address])) {
+                                    $keyEntity = new \Blockchain\Entity\Key(); 
+                                    $keyEntity->setPubkey($pubkey);
+                                    $keyEntity->setHash160($hash160);
+                                    $keyEntity->setAddress($address);
+                                    $keyEntity->setFirstblockhash($blockhash);
+                                    $keyEntity->setFirstblock($blockEntity);
+                                    $this->objectManager->persist($keyEntity);
+                                    $seenAddresses[$address] = array('pubkey' => $pubkey);
+                                } else {
+                                    $this->objectManager->flush();
+                                    $keyEntity = $this->objectManager->getRepository('Blockchain\Entity\Key')->findOneBy(array('address' => $address));
+                                }
                             }
+
+                            if (!$keyEntity) {
+                                die("problem finding input key: $address\n");
+                            }
+                            $inputEntity->setKey($keyEntity);
                             $inputEntity->setHash160($hash160);
                             $inputEntity->setAddress($address);
-                            $inputEntity->setVout($input['vout']);
-                            $redeemedOutputEntity = $this->objectManager->getRepository('Blockchain\Entity\Output')->findOneBy(array('txid' => $input['txid'], 'n' => $input['vout']));
-                            if (!$redeemedOutputEntity) {
-                                die('could not find output');
-                            }
+
                             $gmp_inputValue = gmp_init($redeemedOutputEntity->getValue());
                             $inputEntity->setValue(gmp_strval($gmp_inputValue));
                             $inputEntity->setAddress($redeemedOutputEntity->getAddress());
@@ -603,7 +610,7 @@ Maybe:
         return $transactionData;
     }/*}}}*/
 
-    public function getAddressInfo($address)
+    public function getAddressActivity($address)
     {/*{{{*/
         $keyEntity = $this->objectManager->getRepository('Blockchain\Entity\Key')->findOneBy(array('address' => $address));
         return $this->getAddressData($keyEntity);
@@ -677,7 +684,7 @@ Maybe:
                 'blocktimeFormatted' => $blockEntity->getTime()->format('Y-m-d H:i:s'),
                 'amountSatoshis' => $inputEntity->getValue(),
                 'amount' => self::gmpSatoshisToFloatBTC(gmp_init($inputEntity->getValue())),
-                'type' => 'Address',
+                'type' => null,
                 'fromto' => array()
             );
             foreach ($transactionEntity->getOutputs() as $outputEntity) {
@@ -685,6 +692,17 @@ Maybe:
                     'isGeneration' => false,
                     'address' => $outputEntity->getKey()->getAddress(),
                 );
+
+                if ($outputEntity->getType() == 'pubkeyhash')  {
+                    $type = 'Address';
+                } else {
+                    $type = ucfirst($outputEntity->getType());
+                }
+                if (!$input['type']) {
+                    $input['type'] = $type;
+                } else if ($input['type'] != $type) {
+                    $input['type'] = 'Mixed';
+                }
             }
             $transactions[] = $input;
             $sentCount++;
@@ -696,12 +714,12 @@ Maybe:
                     return ($a['id'] - $b['id']);
                 }
                 
-                switch ($a['type']) {
+                switch ($a['txType']) {
                     case 'received':
-                        return 1;
+                        return -1;
                         break;
                     case 'sent':
-                        return -1;
+                        return 1;
                         break;
                     default:
                         return 0;
