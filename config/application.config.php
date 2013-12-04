@@ -9,7 +9,6 @@ return array(
     'modules' => array(
         'ZendDeveloperTools',
         'DoctrineModule',
-        'DoctrineMongoODMModule',
         'DoctrineORMModule',
         'BjyProfiler',
         'Application',

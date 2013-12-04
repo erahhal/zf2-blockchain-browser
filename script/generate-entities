@@ -1,5 +1,5 @@
 #!/bin/bash
-DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DIR="$( cd "$( dirname "$0" )" && pwd )"
 
 ENTITY_DIR="$DIR/../temp/generated-entities"
 mkdir -p "$ENTITY_DIR"
