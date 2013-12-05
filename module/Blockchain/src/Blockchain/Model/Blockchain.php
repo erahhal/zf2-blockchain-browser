@@ -118,7 +118,7 @@ Maybe:
                 $gmp_coinbaseValue = gmp_div_q(gmp_init("5000000000"), gmp_pow(gmp_init("2"), $coinbaseExp));
             }
             
-            echo "Importing Block: $blockNumber\n";
+            echo "\nBlock $blockNumber, Transactions: ";
 
             $gmp_totalBlockValue = gmp_init("0");
 
@@ -151,7 +151,11 @@ Maybe:
             if ($blockNumber > 0) {
                 $seenTxids = array();
                 $seenAddresses = array();
+                $txCount = 0;
                 foreach ($block['tx'] as $txid) {
+                    $txCount++;
+                    if ($txCount > 1) { echo ', '; }
+                    echo $txCount;
                     // the JSON RPC client appears to have a memory leak, so isolate it inside a function
                     $transaction = $this->getRawTransactionFromServer($txid);
                     
@@ -251,7 +255,6 @@ Maybe:
                                     $keyEntity->setAddress($address);
                                     $keyEntity->setFirstblockhash($blockhash);
                                     $keyEntity->setFirstblock($blockEntity);
-                                    $this->objectManager->persist($keyEntity);
                                     $seenAddresses[$address] = array('pubkey' => $pubkey);
                                 } else {
                                     $this->objectManager->flush();
@@ -262,6 +265,12 @@ Maybe:
                             if (!$keyEntity) {
                                 die("problem finding input key: $address\n");
                             }
+
+                            if ($pubkey && !$keyEntity->getPubkey()) {
+                                $keyEntity->setPubkey($pubkey);
+                            }
+                            $this->objectManager->persist($keyEntity);
+
                             $inputEntity->setKey($keyEntity);
                             $inputEntity->setHash160($hash160);
                             $inputEntity->setAddress($address);
@@ -273,7 +282,7 @@ Maybe:
                             $redeemedOutputEntity->setRedeemingInput($inputEntity);
                             $this->objectManager->persist($redeemedOutputEntity);
                             $gmp_totalInputValue = gmp_add($gmp_totalInputValue, gmp_init($inputEntity->getValue()));
-                            echo 'txid: '.$txid.', input txid: '.$input['txid'].', vout: '.$input['vout'].", val: ".gmp_strval($gmp_inputValue)."\n";
+                            // echo 'txid: '.$txid.', input txid: '.$input['txid'].', vout: '.$input['vout'].", val: ".gmp_strval($gmp_inputValue)."\n";
                             // Need to figure out how to extract hash160, if it is of any value...
                             // $inputEntity->setHash160();
                         }
