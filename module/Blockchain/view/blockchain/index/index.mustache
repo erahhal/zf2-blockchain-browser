@@ -1,14 +1,12 @@
 <h1>Onru.sh Block Explorer</h1>
 
-<p>This is a partial clone of blockexplorer.com, rebuilt from the ground up.</p>
-
 <h2>Search</h2>
 
 Types of searches:
     block number, block hash, address, transaction hash, hash160, public key
 
-<form action="/blockchain/search/index" method="get" name="blockchainSearch">
-    <input type="text" id="blockchainKeywords" name="blockchainKeywords" />
+<form action="/blockchain/search" method="get" name="blockchainSearch">
+    <input type="text" id="phrase" name="phrase" />
     <input type="submit" value="Search" />
 </form>
 

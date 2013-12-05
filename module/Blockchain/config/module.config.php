@@ -108,6 +108,18 @@ return array(
                             ),
                         ),
                     ),
+                    'search' => array(
+                        'type'    => 'Segment',
+                        'options' => array(
+                            'route'    => '/search',
+                            'constraints' => array(
+                            ),
+                            'defaults' => array(
+                                'controller' => 'Blockchain\Controller\Index',
+                                'action'     => 'search',
+                            ),
+                        ),
+                    ),
                 ),
             ),
         ),

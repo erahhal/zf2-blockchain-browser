@@ -449,6 +449,75 @@ Maybe:
         return $blockList;
     }/*}}}*/
 
+    public function search($phrase)
+    {/*{{{*/
+        $phrase = trim($phrase);
+
+        if (preg_match('/^[0-9]+$/', $phrase)) {
+            // numbers only: block number
+            $blockEntity = $this->objectManager->getRepository('Blockchain\Entity\Block')->findOneBy(array('blockNumber' => $phrase));
+            if (!$blockEntity) {
+                $retVal = array(
+                    'success' => false,
+                    'message' => 'block number not found',
+                );
+            } else {
+                $retVal = array(
+                    'success' => true,
+                    'type' => 'blocknumber',
+                    'id' => $phrase
+                );
+            }
+        } else if (self::validAddress($phrase)) {
+            // address
+            $keyEntity = $this->objectManager->getRepository('Blockchain\Entity\Key')->findOneBy(array('address' => $phrase));
+            if (!$keyEntity) {
+                $retVal = array(
+                    'success' => false,
+                    'message' => 'address not found',
+                );
+            } else {
+                $retVal = array(
+                    'success' => true,
+                    'type' => 'address',
+                    'id' => $phrase
+                );
+            }
+        } else {
+            // then try block hash, tx hash, hash160, then pubkey
+            $retVal['success'] = true;
+            $retVal['id'] = $phrase;
+            $blockEntity = $this->objectManager->getRepository('Blockchain\Entity\Block')->findOneBy(array('blockhash' => $phrase));
+            if (!$blockEntity) {
+                $transactionEntity = $this->objectManager->getRepository('Blockchain\Entity\Transaction')->findOneBy(array('txid' => $phrase));
+                if (!$transactionEntity) {
+                    $keyEntity = $this->objectManager->getRepository('Blockchain\Entity\Key')->findOneBy(array('hash160' => $phrase));
+                    if (!$keyEntity) {
+                        $keyEntity = $this->objectManager->getRepository('Blockchain\Entity\Key')->findOneBy(array('pubkey' => $phrase));
+                        if (!$keyEntity) {
+                            $retVal = array(
+                                'success' => false,
+                                'message' => 'no matching records',
+                            );
+                        } else {
+                            $retVal['id'] = $keyEntity->getAddress();
+                            $retVal['type'] = 'address';
+                        }
+                    } else {
+                        $retVal['id'] = $keyEntity->getAddress();
+                        $retVal['type'] = 'address';
+                    }
+                } else {
+                    $retVal['type'] = 'txid';
+                }
+            } else {
+                $retVal['type'] = 'blockhash';
+            }
+        }
+
+        return $retVal;
+    }/*}}}*/
+
     public function getBlockByHash($blockhash)
     {/*{{{*/
         $blockEntity = $this->objectManager->getRepository('Blockchain\Entity\Block')->findOneBy(array('blockhash' => $blockhash));
@@ -613,7 +682,11 @@ Maybe:
     public function getAddressActivity($address)
     {/*{{{*/
         $keyEntity = $this->objectManager->getRepository('Blockchain\Entity\Key')->findOneBy(array('address' => $address));
-        return $this->getAddressData($keyEntity);
+        if (!$keyEntity) {
+            return false;
+        } else {
+            return $this->getAddressData($keyEntity);
+        }
     }/*}}}*/
 
     protected function getAddressData($keyEntity)
@@ -731,13 +804,18 @@ Maybe:
         });
 
         $balance = gmp_init('0');
+        $receivedTotalValue = gmp_init('0');
+        $sentTotalValue = gmp_init('0');
         foreach($transactions as &$transaction) {
+            $amount = gmp_init($transaction['amountSatoshis']);
             switch($transaction['txType']) {
                 case 'received':
-                    $balance = gmp_add($balance, gmp_init($transaction['amountSatoshis']));
+                    $balance = gmp_add($balance, $amount);
+                    $receivedTotalValue = gmp_add($receivedTotalValue, $amount);
                     break;
                 case 'sent':
-                    $balance = gmp_sub($balance, gmp_init($transaction['amountSatoshis']));
+                    $balance = gmp_sub($balance, $amount);
+                    $sentTotalValue = gmp_add($sentTotalValue, $amount);
                     break;
                 default:
                     die($transaction['txType']);
@@ -750,9 +828,9 @@ Maybe:
             'address' => $keyEntity->getAddress(),
             'firstseen' => $keyEntity->getFirstblock()->getTime()->format('Y-m-d H:i:s'),
             'receivedTransactions' => $receivedCount,
-            'receivedBTC' => 'TBD',
+            'receivedBTC' => self::gmpSatoshisToFloatBTC($receivedTotalValue),
             'sentTransactions' => $sentCount,
-            'sentBTC' => 'TBD',
+            'sentBTC' => self::gmpSatoshisToFloatBTC($sentTotalValue),
             'hash160' => $keyEntity->getHash160(),
             'pubkey' => $keyEntity->getPubkey(),
             'transactions' => $transactions,
@@ -763,8 +841,39 @@ Maybe:
 
 
 /* ---------------------------------------------------------------------------------------------
-   Bitcoind RPC Functions
+    Bitcoin utility functions
 --------------------------------------------------------------------------------------------- */
+
+    // checks if address is valid
+    static public function validAddress($address)
+    {/*{{{*/
+        // must start with 1 or 3
+        if (!preg_match('/^[13]/', $address)) {
+            return false;
+        }
+
+        // must be between 27 and 34 characters in length
+        if (strlen($address) < 27 || strlen($address) > 34) {
+            return false;
+        }
+
+        // also no uppercase letter "O", uppercase letter "I", lowercase letter "l", and the number "0"
+        if (preg_match('/[OIl0]/', $address)) {
+            return false;
+        }
+
+        // checksum must match
+        $addressHex = self::base58ToBase256($address);
+        $addressBinary = pack('H*', $addressHex);
+        $binary = substr($addressBinary, 0, strlen($addressBinary) - 4);
+        $addressChecksum = substr($addressBinary, -4);
+        $binaryChecksum = hash('sha256', hash('sha256', $binary, true), true);
+        if ($addressChecksum != substr($binaryChecksum, 0, 4)) {
+            return false;
+        }
+
+        return true;
+    }/*}}}*/
 
     // converts BTC values in floating point to Satoshies in GMP (Gnu Multiple Precision)
     static public function floatBTCToGmpSatoshis($value)
@@ -839,7 +948,7 @@ Maybe:
         while (bccomp($decString, 0) == 1) {
             $dv = (string) bcdiv($decString, '16', 0);
             $rem = (integer) bcmod($decString, '16');
-            $dec = $dv;
+            $decString = $dv;
             $retVal = $retVal . self::$hexChars[$rem];
         }
         return strrev($retVal);
@@ -921,8 +1030,8 @@ Maybe:
         $binary = pack('H*', $hash);
         // get the checksum
         $binaryChecksum = hash('sha256', hash('sha256', $binary, true), true);
-        $binaryAddress = $binary . substr($binaryChecksum, 0, 4);
-        $unpacked = unpack('H*', $binaryAddress);
+        $addressBinary = $binary . substr($binaryChecksum, 0, 4);
+        $unpacked = unpack('H*', $addressBinary);
         $addressHex = $unpacked[1];
         $address = self::base256ToBase58($addressHex);
 
