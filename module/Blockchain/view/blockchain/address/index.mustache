@@ -7,7 +7,14 @@
     <li><span class="dataLabel">Sent transactions:</span> {{sentTransactions}}</li>
     <li><span class="dataLabel">Sent BTC:</span> {{sentBTC}}</li>
     <li><span class="dataLabel">Hash160:</span> {{hash160}}</li>
-    <li><span class="dataLabel">Public key:</span> {{pubkey}}</li>
+    <li><span class="dataLabel">Public key:</span> 
+    {{#pubkey}}
+        {{pubkey}}
+    {{/pubkey}}
+    {{^pubkey}}
+        Unknown (not seen yet)
+    {{/pubkey}}
+    </li>
 </ul>
 
 <h2>Ledger</h2>
