@@ -456,10 +456,11 @@ Maybe:
         }
 
         $query = $qb->getQuery();
-
-        $paginator = new \Zend\Paginator\Paginator(
-            new \DoctrineORMModule\Paginator\Adapter\DoctrinePaginator(new \Doctrine\ORM\Tools\Pagination\Paginator($query))
-        );
+        $doctrinePaginator = new \Doctrine\ORM\Tools\Pagination\Paginator($query);
+        // the following line prevents doctrine from loading the entire table into a temp table
+        $doctrinePaginator->setUseOutputWalkers(false);
+        $doctrinePaginatorAdapter = new \DoctrineORMModule\Paginator\Adapter\DoctrinePaginator($doctrinePaginator);
+        $paginator = new \Zend\Paginator\Paginator($doctrinePaginatorAdapter);
         $paginator->setItemCountPerPage(20);
         $paginator->setPageRange(14);
 
