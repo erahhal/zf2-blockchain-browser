@@ -652,12 +652,14 @@ Maybe:
                 'amount' => self::gmpSatoshisToFloatBTC(gmp_init($inputEntity->getValue())),
                 'scriptSig' => $inputEntity->getScriptSigAsm()
             );
+            $input['amountFormatted'] = $input['amount'];
             if ($inputEntity->getCoinbase()) {
+                $isCoinbase = true;
                 $input['isCoinbase'] = true;
                 $input['type'] = 'Generation';
                 $input['scriptSig'] = $inputEntity->getCoinbase();
                 if ($blockEntity->getTakenFees()) {
-                    $input['amount'] = $input['amount'] . ' + ' . self::gmpSatoshisToFloatBTC(gmp_init($blockEntity->getTakenFees())) . ' fees';
+                    $input['amountFormatted'] = $input['amount'] . ' + ' . self::gmpSatoshisToFloatBTC(gmp_init($blockEntity->getTakenFees())) . ' fees';
                 }
             } else {
                 $input = array_merge($input, array(
@@ -708,7 +710,9 @@ Maybe:
         );
 
         if ($isCoinbase) {
-            $transactionData['fee'] = - self::gmpSatoshisToFloatBTC(gmp_init($blockEntity->getTakenFees()));
+            $fee = self::gmpSatoshisToFloatBTC(gmp_init($blockEntity->getTakenFees()));
+            $transactionData['totalIn'] += $fee;
+            $transactionData['fee'] = - $fee;
         } else {
             $transactionData['fee'] = self::gmpSatoshisToFloatBTC(gmp_init($transactionEntity->getFee()));
         }

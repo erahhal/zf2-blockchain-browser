@@ -146,7 +146,7 @@ function dragmove(d) {
     {{^isCoinbase}}
         <div class="prev firstCol"><a href="/blockchain/transaction/{{previousTxid}}#o{{vout}}">{{previousTxidTruncated}} ({{vout}})</a></div>
     {{/isCoinbase}}
-    <div class="amount">{{amount}}</div>
+    <div class="amount">{{amountFormatted}}</div>
     {{#isCoinbase}}
         <div class="from">N/A</div>
     {{/isCoinbase}}
