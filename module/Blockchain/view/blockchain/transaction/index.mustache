@@ -5,7 +5,7 @@
     <li><span class="dataLabel">Appeared in block:</span> <a href="/blockchain/block/number/{{blocknumber}}">{{blocknumber}}</a> ({{blocktime}})</li>
     <li><span class="dataLabel">Number of inputs:</span> {{inputCount}} (<a href="#input">Jump to inputs</a>)</li>
     <li><span class="dataLabel">Total BTC in:</span> {{totalIn}}</li>
-    <li><span class="dataLabel">Number of outputs:</span> {{outputCount}} (<a href="#output">Jump to outpus</a>)</li>
+    <li><span class="dataLabel">Number of outputs:</span> {{outputCount}} (<a href="#output">Jump to outputs</a>)</li>
     <li><span class="dataLabel">Total BTC out:</span> {{totalOut}}</li>
     <li><span class="dataLabel">Size:</span> {{size}} bytes</li>
     <li><span class="dataLabel">Fee:</span> {{fee}}</li>
@@ -128,6 +128,7 @@ function dragmove(d) {
 }
 </script>
 
+<a name="input"></a>
 <h2>Inputs</h2>
 <div class="inputlistRow header">
     <div class="prev firstCol">Previous output (index)</div>
@@ -158,6 +159,7 @@ function dragmove(d) {
 <div class="rowEnd"></div>
 {{/inputs}}
 
+<a name="output"></a>
 <h2>Outputs</h2>
 <div class="outputlistRow header">
     <div class="index firstCol">Index</div>

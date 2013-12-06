@@ -11,14 +11,12 @@ class IndexController extends AbstractActionController
     protected $_blockchain = null;
 
     public function __construct($blockchain)
-    {
-        {/*{{{*/
-                $this->_blockchain = $blockchain;
-            }/*}}}*/
-    }
+    {/*{{{*/
+        $this->_blockchain = $blockchain;
+    }/*}}}*/
 
     public function indexAction()
-    {
+    {/*{{{*/
         $blockPaginator = $this->_blockchain->getBlocks();
         $blockPaginator->setCurrentPageNumber((int) $this->params('page'));
 
@@ -27,19 +25,17 @@ class IndexController extends AbstractActionController
         ));
 
         return $view;
-    }
+    }/*}}}*/
 
     public function importAction()
-    {
-        {/*{{{*/
-                $this->_blockchain->import();
-                
-                return new ViewModel();
-            }/*}}}*/
-    }
+    {/*{{{*/
+        $this->_blockchain->import();
+        
+        return new ViewModel();
+    }/*}}}*/
 
     public function searchAction()
-    {
+    {/*{{{*/
         $phrase = $this->params()->fromQuery('phrase');
         $results = $this->_blockchain->search($phrase);
         if ($results['success']) {
@@ -89,6 +85,6 @@ class IndexController extends AbstractActionController
             );
             return new ViewModel($formatted);
         }
-    }
+    }/*}}}*/
 }
 
