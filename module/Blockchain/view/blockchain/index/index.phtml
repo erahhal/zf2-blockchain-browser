@@ -25,7 +25,16 @@ Types of searches:
     <div class="blockhash"><a href="/blockchain/block/hash/{{blockhash}}"><?php echo substr($blockEntity->getBlockhash(), 0, 25); ?>...</a></div>
     <div class="time"><?php echo $blockEntity->getTime()->format('Y-m-d H:i:s'); ?></div>
     <div class="transactionCount"><?php echo $blockEntity->getTransactions()->count(); ?></div>
-    <div class="totalBTC"><?php echo \Blockchain\Model\Blockchain::gmpSatoshisToFloatBTC(gmp_init($blockEntity->getTotalValue())); ?></div>
+    <div class="totalBTC">
+    <?php 
+        $totalValue = $blockEntity->getTotalValue();
+        if (is_string($totalValue) && preg_match('/^[0-9]+$/', $totalValue)) {
+            echo \Blockchain\Model\Blockchain::gmpSatoshisToFloatBTC(gmp_init($totalValue));
+        } else {
+            echo 'loading...';
+        }
+    ?>
+    </div>
     <div class="size"><?php echo $blockEntity->getSize(); ?></div>
 </div>
 <div class="rowEnd"></div>
