@@ -21,8 +21,8 @@ Types of searches:
 <div class="rowEnd"></div>
 <?php foreach ($this->blockPaginator as $blockEntity) { ?>
 <div class="blocklistRow">
-    <div class="number firstCol"><a href="/blockchain/block/number/{{blocknumber}}"><?php echo $blockEntity->getBlockNumber(); ?></a></div>
-    <div class="blockhash"><a href="/blockchain/block/hash/{{blockhash}}"><?php echo substr($blockEntity->getBlockhash(), 0, 25); ?>...</a></div>
+    <div class="number firstCol"><a href="/blockchain/block/number/<?php echo $blockEntity->getBlockNumber(); ?>"><?php echo $blockEntity->getBlockNumber(); ?></a></div>
+    <div class="blockhash"><a href="/blockchain/block/hash/<?php echo $blockEntity->getBlockhash(); ?>"><?php echo substr($blockEntity->getBlockhash(), 0, 25); ?>...</a></div>
     <div class="time"><?php echo $blockEntity->getTime()->format('Y-m-d H:i:s'); ?></div>
     <div class="transactionCount"><?php echo $blockEntity->getTransactions()->count(); ?></div>
     <div class="totalBTC">
