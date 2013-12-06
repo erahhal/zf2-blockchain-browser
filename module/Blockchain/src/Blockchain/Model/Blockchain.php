@@ -637,7 +637,10 @@ Maybe:
     public function getTransaction($txid)
     {/*{{{*/
         $transactionEntity = $this->objectManager->getRepository('Blockchain\Entity\Transaction')->findOneBy(array('txid' => $txid));
-        return $this->getTransactionData($transactionEntity);
+        if ($transactionEntity) {
+            return $this->getTransactionData($transactionEntity);
+        }
+        return null;
     }/*}}}*/
 
     protected function getTransactionData($transactionEntity)

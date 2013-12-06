@@ -1,3 +1,4 @@
+{{#address}}
 <h1>Address {{address}}</h1>
 
 <ul class="simpleList">
@@ -51,3 +52,7 @@
 </div>
 <div class="rowEnd"></div>
 {{/transactions}}
+{{/address}}
+{{^address}}
+Address not found
+{{/address}}

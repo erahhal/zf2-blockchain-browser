@@ -38,9 +38,36 @@ Types of searches:
 
 <?php echo $this->paginationControl($this->blockPaginator, 'Sliding', 'partial/pagination-search', array('route' => 'blockchain')); ?>
 
-<h2>Unique Transactions</h2>
+<h2>Example Transactions (from btclook.com)</h2>
 
 <ul class="simpleList">
+    <li><a href="/blockchain/transaction/497e5e59111238b953e26e8b8587c2433efba8f9359920d3696efc59c30ac98c">11 ins, 2 outs</a></li>
+    <li><a href="/blockchain/transaction/96e0399e30e422f8dfe4d285ebf3504faccd4a70e18b0118d29f16cffa428032">Lots of small values</a></li>
+    <li><a href="/blockchain/transaction/3eed0dc887501d369037d69d294d8791699c5cd8079356939324bc58668656a2">Somewhat Complex (240 in, 2 out)</a></li>
+    <li><a href="/blockchain/transaction/1c19389b0461f0901d8eace260764691926a5636c74bd8a3cc68db08dbbeb80a">Very complex (100 in, 999 out)</a></li>
+    <li><a href="/blockchain/transaction/4885ddf124a0f97b5a3775a12de0274d342d12842ebe59520359f976721ac8c3">A theft?</a></li>
+    <li><a href="/blockchain/transaction/eea07b0ae737bf4279e7d66b7108b032529ff233d4aa0ec0504cdd4ebe67c058">Big stuff</a></li>
+</ul>
+
+<h2>Interesting Addresses</h2>
+
+<ul class="simpleList">
+    <li><a href="/blockchain/address/1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX">SilkRoad's ฿37K seized by the FBI</a></li>
+</ul>
+
+<h2>Various Transaction Shapes</h2>
+
+<ul class="simpleList">
+    <li><a href="/blockchain/transaction/017b8e288d6ae67cb4491bb6f4ec4b292efff2581b64ecdfc7337580a497c4da">Generation with fees</a></li>
+    <li><a href="/blockchain/transaction/4c1d402d91cb88ae1cbf27e10a8158c076a54a0792a9b0b46087fb517e0e3912">Two addresses to one</a></li>
+    <li><a href="/blockchain/transaction/929f0f7a6b7849b3ce45ed936ab4ee8f1afa7572d0896360c3b6ac7666bc0391">One address to two</a></li>
+    <li><a href="/blockchain/transaction/ad385c6458ff57692424fc99695101b380354a5683deaef0d8450b30d5f8a449">Many addresses to one</a></li>
+    <li><a href="/blockchain/transaction/0a079762a92a7bf526363e4c77c8c0f689e631de950fa583d361de6c5ef5a2cf">Many small and one big input to one output</a></li>
+    <li><a href="/blockchain/transaction/431fda2fd742003ec4e83171154057189623f198c91b957659bda752fa33fd25">One to one big and many small</li>
+    <li><a href="/blockchain/transaction/043bc214af9d8cb33d6f24492392cfb09f4fa582eacd36b8104eb2bbf164a802">Rail gun slivers</li>
+</ul>
+
+    <?php /*
     <li><a href="">Largest transactions</a></li>
     <li><a href="">Strange transactions</a></li>
-</ul>
+    */ ?>

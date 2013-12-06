@@ -1,3 +1,4 @@
+{{#txid}}
 <h1>Transaction</h1>
 
 <ul class="simpleList">
@@ -186,4 +187,7 @@ function dragmove(d) {
 </div>
 <div class="rowEnd"></div>
 {{/outputs}}
-
+{{/txid}}
+{{^txid}}
+Transaction not found
+{{/txid}}
