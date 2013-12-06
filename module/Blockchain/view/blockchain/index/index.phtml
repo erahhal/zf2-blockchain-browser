@@ -1,0 +1,41 @@
+<h2>Search</h2>
+
+Types of searches:
+    block number, block hash, address, transaction hash, hash160, public key
+
+<form action="/blockchain/search" method="get" name="blockchainSearch">
+    <input type="text" id="phrase" name="phrase" />
+    <input type="submit" value="Search" />
+</form>
+
+<h2>Latest blocks</h2>
+ 
+<div class="blocklistRow header">
+    <div class="number firstCol">Number</div>
+    <div class="blockhash">Hash</div>
+    <div class="time">Time</div>
+    <div class="transactionCount">Transactions</div>
+    <div class="totalBTC">Total BTC</div>
+    <div class="size">Size (kB)</div>
+</div>
+<div class="rowEnd"></div>
+<?php foreach ($this->blockPaginator as $blockEntity) { ?>
+<div class="blocklistRow">
+    <div class="number firstCol"><a href="/blockchain/block/number/{{blocknumber}}"><?php echo $blockEntity->getBlockNumber(); ?></a></div>
+    <div class="blockhash"><a href="/blockchain/block/hash/{{blockhash}}"><?php echo substr($blockEntity->getBlockhash(), 0, 25); ?>...</a></div>
+    <div class="time"><?php echo $blockEntity->getTime()->format('Y-m-d H:i:s'); ?></div>
+    <div class="transactionCount"><?php echo $blockEntity->getTransactions()->count(); ?></div>
+    <div class="totalBTC"><?php echo \Blockchain\Model\Blockchain::gmpSatoshisToFloatBTC(gmp_init($blockEntity->getTotalValue())); ?></div>
+    <div class="size"><?php echo $blockEntity->getSize(); ?></div>
+</div>
+<div class="rowEnd"></div>
+<?php } ?>
+
+<?php echo $this->paginationControl($this->blockPaginator, 'Sliding', 'partial/pagination-search', array('route' => 'blockchain')); ?>
+
+<h2>Unique Transactions</h2>
+
+<ul class="simpleList">
+    <li><a href="">Largest transactions</a></li>
+    <li><a href="">Strange transactions</a></li>
+</ul>

@@ -82,7 +82,6 @@ Maybe:
             $blockId = $blockEntity->getId();
             $blockhash = $blockEntity->getBlockhash();
             $blockNumber = $blockEntity->getBlockNumber();
-            $gmp_circulation = gmp_init($blockEntity->getCirculation());
 
             $block = $this->getBlockFromServer($blockhash);
 
@@ -103,7 +102,6 @@ Maybe:
         } else {
             $blockNumber = 0;
             $blockhash = $client->call('getblockhash', array($blockNumber));
-            $gmp_circulation = gmp_init("0");
             $gmp_coinbaseValue = gmp_init("5000000000");
         }
 
@@ -194,7 +192,6 @@ Maybe:
                             $inputEntity->setCoinbase($input['coinbase']);
                             $inputEntity->setValue(gmp_strval($gmp_coinbaseValue));
                             $gmp_totalInputValue = gmp_add($gmp_totalInputValue, $gmp_coinbaseValue);
-                            $gmp_circulation = gmp_add($gmp_circulation, $gmp_coinbaseValue);
                         } else {
                             if (isset($seenTxids[$input['txid']])) {
                                 // input of one transaction is referencing the output of another transaction in the same block.  flush writes.
@@ -414,7 +411,6 @@ Maybe:
             $blockEntity->setOfferedFees(gmp_strval($gmp_offeredFees));
             $blockEntity->setTakenFees(gmp_strval($gmp_takenFees));
             $blockEntity->setTotalvalue(gmp_strval($gmp_totalBlockValue));
-            $blockEntity->setCirculation(gmp_strval($gmp_circulation));
             $gmp_lostValue = gmp_sub($gmp_offeredFees, $gmp_takenFees);
             $blockEntity->setLostvalue(gmp_strval($gmp_lostValue));
             $this->objectManager->persist($blockEntity);
@@ -434,11 +430,40 @@ Maybe:
         }
     }/*}}}*/
 
-    public function getLatestBlocks()
+    public function getBlocks($startBlockNumber = null, $endBlockNumber = null)
     {/*{{{*/
         $blockList = array();
-        $query = $this->objectManager->createQuery('SELECT b FROM Blockchain\Entity\Block b WHERE b.totalvalue IS NOT NULL ORDER BY b.id DESC')->setMaxResults(20);
-        $result = $query->getResult();
+        $whereSet = false;
+        $qb = $this->objectManager->createQueryBuilder();
+        $qb->select('b')
+           ->from('Blockchain\Entity\Block', 'b')
+           ->orderBy('b.id', 'DESC')
+           ->setMaxResults(20);
+
+        if ($startBlockNumber) {
+            $qb->where($qb->expr()->gte('b.blockNumber', $startBlockNumber));
+            $whereSet = true;
+        }
+
+        if ($endBlockNumber) {
+            $expr = $qb->expr()->lte('b.blockNumber', $endBlockNumber);
+            if ($whereSet) {
+                $qb->andWhere($expr);
+            } else {
+                $qb->where($expr);
+                $whereSet = true;
+            }
+        }
+
+        $query = $qb->getQuery();
+
+        $paginator = new \Zend\Paginator\Paginator(
+            new \DoctrineORMModule\Paginator\Adapter\DoctrinePaginator(new \Doctrine\ORM\Tools\Pagination\Paginator($query))
+        );
+        $paginator->setItemCountPerPage(20);
+        $paginator->setPageRange(14);
+
+        /*
         if (count($result)) {
             foreach ($result as $blockEntity) {
                 $blockList[] = array(
@@ -456,6 +481,8 @@ Maybe:
         }
 
         return $blockList;
+        */
+        return $paginator;
     }/*}}}*/
 
     public function search($phrase)

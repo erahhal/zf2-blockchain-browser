@@ -19,13 +19,14 @@ class IndexController extends AbstractActionController
 
     public function indexAction()
     {
-        {/*{{{*/
-                $view = new ViewModel(array(
-                    'blockList' => $this->_blockchain->getLatestBlocks()
-                ));
+        $blockPaginator = $this->_blockchain->getBlocks();
+        $blockPaginator->setCurrentPageNumber((int) $this->params('page'));
 
-                return $view;
-            }/*}}}*/
+        $view = new ViewModel(array(
+            'blockPaginator' => $blockPaginator
+        ));
+
+        return $view;
     }
 
     public function importAction()

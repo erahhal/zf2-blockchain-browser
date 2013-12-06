@@ -234,3 +234,7 @@ div.container a.brand {
 .addresstxlistRow .balance {
     width: 100px;
 }
+
+.paginationControl {
+    margin-top: 20px;
+}

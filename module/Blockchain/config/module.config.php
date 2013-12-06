@@ -21,13 +21,14 @@ return array(
             // module. Simply drop new controllers in, and you can access them
             // using the path /blockchain/:controller/:action
             'blockchain' => array(
-                'type'    => 'Literal',
+                'type'    => 'Segment',
                 'options' => array(
-                    'route'    => '/blockchain',
+                    'route'    => '/blockchain[/page/:page]',
                     'defaults' => array(
                         '__NAMESPACE__' => 'Blockchain\Controller',
                         'controller'    => 'Index',
                         'action'        => 'index',
+                        'page'          => 1,
                     ),
                 ),
                 'may_terminate' => true,
