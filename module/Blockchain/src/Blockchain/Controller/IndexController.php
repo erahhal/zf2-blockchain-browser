@@ -72,7 +72,7 @@ class IndexController extends AbstractActionController
                         'name' => 'Transaction '.$results['id'],
                         'url' => '/blockchain/transaction/'.$results['id'],
                     );
-                    $redirect = $this->redirect()->toRoute('blockcina/transaction', array(
+                    $redirect = $this->redirect()->toRoute('blockchain/transaction', array(
                         'txid' => $results['id'],
                     ));
                     break;

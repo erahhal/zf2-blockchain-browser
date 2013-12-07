@@ -38,6 +38,15 @@ Types of searches:
 
 <?php echo $this->paginationControl($this->blockPaginator, 'Sliding', 'partial/pagination-search', array('route' => 'blockchain')); ?>
 
+<h2>Interesting entries</h2>
+
+<ul class="simpleList">
+    <li><a href="/blockchain/block/largest">Largest block</a></li>
+    <li><a href="/blockchain/block/priciest">Priciest block</a></li>
+    <li><a href="/blockchain/transaction/largest">Largest transaction</a></li>
+    <li><a href="/blockchain/transaction/priciest">Priciest transaction</a></li>
+</ul>
+
 <h2>Example Transactions (from btclook.com)</h2>
 
 <ul class="simpleList">

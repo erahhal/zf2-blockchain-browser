@@ -430,6 +430,58 @@ Maybe:
         }
     }/*}}}*/
 
+    public function getLargestBlock()
+    {/*{{{*/
+        $query = $this->objectManager->createQuery('
+            SELECT b, MAX(b.size) as maxSize
+            FROM Blockchain\Entity\Block b
+            GROUP BY b.id
+            ORDER BY maxSize DESC')
+           ->setMaxResults(1);
+
+        $result = $query->getResult();
+        return $result[0][0]->getBlockNumber();
+    }/*}}}*/
+
+    public function getPriciestBlock()
+    {/*{{{*/
+        $query = $this->objectManager->createQuery('
+            SELECT b, MAX(b.totalvalue) as maxValue
+            FROM Blockchain\Entity\Block b
+            GROUP BY b.id
+            ORDER BY maxValue DESC')
+           ->setMaxResults(1);
+
+        $result = $query->getResult();
+        return $result[0][0]->getBlockNumber();
+    }/*}}}*/
+
+    public function getLargestTransaction()
+    {/*{{{*/
+        $query = $this->objectManager->createQuery('
+            SELECT t, MAX(t.size) as maxSize
+            FROM Blockchain\Entity\Transaction t
+            GROUP BY t.id
+            ORDER BY maxSize DESC')
+           ->setMaxResults(1);
+
+        $result = $query->getResult();
+        return $result[0][0]->getTxid();
+    }/*}}}*/
+
+    public function getPriciestTransaction()
+    {/*{{{*/
+        $query = $this->objectManager->createQuery('
+            SELECT t, MAX(t.totalIn) as maxValue
+            FROM Blockchain\Entity\Transaction t
+            GROUP BY t.id
+            ORDER BY maxValue DESC')
+           ->setMaxResults(1);
+
+        $result = $query->getResult();
+        return $result[0][0]->getTxid();
+    }/*}}}*/
+
     public function getBlocks($startBlockNumber = null, $endBlockNumber = null)
     {/*{{{*/
         $blockList = array();

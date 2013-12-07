@@ -67,5 +67,21 @@ class TransactionController extends AbstractActionController
 
         return $view;
     }/*}}}*/
+
+    public function largestAction()
+    {/*{{{*/
+        $txid = $this->_blockchain->getLargestTransaction();
+        $redirect = $this->redirect()->toRoute('blockchain/transaction', array(
+            'txid' => $txid,
+        ));
+    }/*}}}*/
+
+    public function priciestAction()
+    {/*{{{*/
+        $txid = $this->_blockchain->getPriciestTransaction();
+        $redirect = $this->redirect()->toRoute('blockchain/transaction', array(
+            'txid' => $txid,
+        ));
+    }/*}}}*/
 }
 

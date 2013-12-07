@@ -7,17 +7,20 @@ use Zend\View\Model\ViewModel;
 
 class BlockController extends AbstractActionController
 {
-    protected $_blockchain;
+
+    protected $_blockchain = null;
 
     public function __construct($blockchain)
-    {/*{{{*/
-        $this->_blockchain = $blockchain;
-    }/*}}}*/
+    {
+        {/*{{{*/
+                $this->_blockchain = $blockchain;
+            }/*}}}*/
+    }
 
     public function indexAction()
     {/*{{{*/
-        $blockhash = $this->params('blockhash');
         $blocknumber = $this->params('blocknumber');
+        $blockhash = $this->params('blockhash');
 
         if ($blockhash) {
             $blockData = $this->_blockchain->getBlockByHash($blockhash);
@@ -31,5 +34,23 @@ class BlockController extends AbstractActionController
 
         return $view;
     }/*}}}*/
+
+    public function largestAction()
+    {/*{{{*/
+        $blocknumber = $this->_blockchain->getLargestBlock();
+        $redirect = $this->redirect()->toRoute('blockchain/block-number', array(
+            'blocknumber' => $blocknumber,
+        ));
+    }/*}}}*/
+
+    public function priciestAction()
+    {/*{{{*/
+        $blocknumber = $this->_blockchain->getPriciestBlock();
+        $redirect = $this->redirect()->toRoute('blockchain/block-number', array(
+            'blocknumber' => $blocknumber,
+        ));
+    }/*}}}*/
+
+
 }
 
