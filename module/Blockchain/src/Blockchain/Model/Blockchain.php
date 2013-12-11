@@ -109,7 +109,21 @@ Maybe:
 
         $count = 0;
         // Start importing 
+        $lastTime = 0;
+        $currTime = 0;
+        $avgTime = 0;
+        $blockCount = 0;
         while($blockhash) {
+            $currTime = microtime(true);
+            if ($lastTime) {
+                $diff = $currTime - $lastTime;
+                // update average time between blocks
+                $avgTime = ($avgTime * ($blockCount - 1) + $diff) / $blockCount;
+
+                $blocksLeft = $blockcount - $blockNumber;
+                $estimatedCompletion = $blocksLeft * $avgTime;
+                echo sprintf("\n\nEstimated completion: %s (blocks left: %d, average block time: %s seconds\n", self::secondsToString($estimatedCompletion), $blocksLeft, number_format($avgTime, 2));
+            }
             if ($blockNumber % 210000 == 0) {
                 // only calculate this when necessary instead of every loop
                 $coinbaseExp = floor($blockNumber / 210000);
@@ -440,7 +454,39 @@ Maybe:
 
             $blockhash = $nextblockhash;
             $blockNumber++;
+            $blockCount++;
+            $lastTime = $currTime;
         }
+    }/*}}}*/
+
+    static public function secondsToString($seconds)
+    {/*{{{*/
+        $ret = '';
+
+        $days = intval(intval($seconds) / (3600*24));
+        if ($days > 0) {
+            $ret .= "$days days";
+        }
+
+        $hours = (intval($seconds) / 3600) % 24;
+        if ($hours > 0) {
+            if ($ret) { $ret .= ', '; }
+            $ret .= "$hours hours";
+        }
+
+        $minutes = (intval($seconds) / 60) % 60;
+        if($minutes > 0) {
+            if ($ret) { $ret .= ', '; }
+            $ret .= "$minutes minutes";
+        }
+
+        $seconds = intval($seconds) % 60;
+        if ($seconds > 0) {
+            if ($ret) { $ret .= ', '; }
+            $ret .= "$seconds seconds";
+        }
+
+        return $ret;
     }/*}}}*/
 
     public function getLargestBlock()
