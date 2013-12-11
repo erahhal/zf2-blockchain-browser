@@ -188,7 +188,14 @@ function dragmove(d) {
         <div class="redeemedAt">Not yet redeemed</div>
     {{/redeemedAt}}
     <div class="amount">{{amount}}</div>
-    <div class="to"><a href="/blockchain/address/{{address}}">{{address}}</a></div>
+    <div class="to">
+    {{#nonstandard}}
+        {{address}}
+    {{/nonstandard}}
+    {{^nonstandard}}
+        <a href="/blockchain/address/{{address}}">{{address}}</a>
+    {{/nonstandard}}
+    </div>
     <div class="type">{{type}}&nbsp;</div>
     <div class="scriptPubKey">{{scriptPubKey}}</div>
 </div>

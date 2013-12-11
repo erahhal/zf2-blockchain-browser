@@ -759,7 +759,8 @@ Maybe:
                 'redeemedAt' => $redeemedAt,
                 'redeemedAtTruncated' => $redeemedAtTruncated,
                 'amount' => self::gmpSatoshisToFloatBTC(gmp_init($outputEntity->getValue())),
-                'address' => $outputEntity->getAddress(),
+                'address' => $outputEntity->getAddress() ? $outputEntity->getAddress() : 'unknown',
+                'nonstandard' => $outputEntity->getAddress() ? false : true,
                 'type' => $outputEntity->getType(),
                 'scriptPubKey' => $outputEntity->getScriptPubKeyAsm(),
             );
