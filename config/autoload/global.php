@@ -42,10 +42,12 @@ return array(
                 ),
                 */
             ),
+            /* 
             array(
                 'label' => 'Charts',
                 'route' => 'blockchain/charts',
             ),
+             */
         ),
     ),
     'service_manager' => array(
