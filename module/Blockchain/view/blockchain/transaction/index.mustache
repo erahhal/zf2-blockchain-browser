@@ -148,12 +148,19 @@ function dragmove(d) {
         <div class="prev firstCol"><a href="/blockchain/transaction/{{previousTxid}}#o{{vout}}">{{previousTxidTruncated}} ({{vout}})</a></div>
     {{/isCoinbase}}
     <div class="amount">{{amountFormatted}}</div>
+    <div class="from">
     {{#isCoinbase}}
-        <div class="from">N/A</div>
+        N/A
     {{/isCoinbase}}
     {{^isCoinbase}}
-        <div class="from"><a href="/blockchain/address/{{fromAddress}}">{{fromAddress}}</a></div>
+        {{#nonstandard}}
+            {{fromAddress}}
+        {{/nonstandard}}
+        {{^nonstandard}}
+            <a href="/blockchain/address/{{fromAddress}}">{{fromAddress}}</a>
+        {{/nonstandard}}
     {{/isCoinbase}}
+    </div>
     <div class="type">{{type}}</div>
     <div class="scriptSig">{{scriptSig}}</div>
 </div>

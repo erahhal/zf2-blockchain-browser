@@ -211,6 +211,7 @@ Maybe:
                                 die('could not find output');
                             }
 
+                            $nonstandard = false;
                             $pubkey = null;
                             $hash160 = null;
                             $address = null;
@@ -225,8 +226,16 @@ Maybe:
                                 $pubkey = $matches[2];
                                 $hash160 = self::pubkeyToHash160($pubkey);
                                 $address = self::hash160ToAddress($hash160);
+                            } else if ($redeemedOutputEntity->getType() == 'nonstandard') {
+                                $nonstandard = true;
+                                echo "...nonstandard output, scriptsig: ".$input['scriptSig']['asm']."...";
+                                $redeemedOutputKeyEntity = $redeemedOutputEntity->getKey();
+                                if ($redeemedOutputKeyEntity) {
+                                    $pubkey = $redeemedOutputKeyEntity->getPubkey();
+                                    $hash160 = $redeemedOutputKeyEntity->getHash160();
+                                    $address = $redeemedOutputKeyEntity->getAddress();
+                                } 
                             } else if (preg_match('/([\S]+)/', $input['scriptSig']['asm'])) {
-
                                 // Standard Generation Transaction (pay-to-pubkey)
                                 // scriptPubKey: <pubKey> OP_CHECKSIG
                                 // scriptSig: <sig>
@@ -237,7 +246,8 @@ Maybe:
                                     $hash160 = $redeemedOutputKeyEntity->getHash160();
                                     $address = $redeemedOutputKeyEntity->getAddress();
                                 } else {
-                                    die("Standard Generation without key\n");
+                                    echo "\n\n".$input['scriptSig']['asm']."\n";
+                                    die("\nStandard Generation without key\n");
                                 }
                             } else {
                                 die("strange scriptSig: ".$input['scriptSig']['asm']."\n");
@@ -245,7 +255,7 @@ Maybe:
 
                             $keyEntity = $this->objectManager->getRepository('Blockchain\Entity\Key')->findOneBy(array('address' => $address));
                             if (!$keyEntity) {
-                                if (!isset($seenAddresses[$address])) {
+                                if ($address && !isset($seenAddresses[$address])) {
                                     $keyEntity = new \Blockchain\Entity\Key(); 
                                     $keyEntity->setPubkey($pubkey);
                                     $keyEntity->setHash160($hash160);
@@ -259,16 +269,19 @@ Maybe:
                                 }
                             }
 
-                            if (!$keyEntity) {
+                            if (!$keyEntity && !$nonstandard) {
                                 die("problem finding input key: $address\n");
                             }
 
-                            if ($pubkey && !$keyEntity->getPubkey()) {
-                                $keyEntity->setPubkey($pubkey);
-                            }
-                            $this->objectManager->persist($keyEntity);
+                            if ($keyEntity) {
+                                if ($pubkey && !$keyEntity->getPubkey()) {
+                                    $keyEntity->setPubkey($pubkey);
+                                }
+                                $this->objectManager->persist($keyEntity);
 
-                            $inputEntity->setKey($keyEntity);
+                                $inputEntity->setKey($keyEntity);
+                            }
+
                             $inputEntity->setHash160($hash160);
                             $inputEntity->setAddress($address);
 
@@ -704,6 +717,7 @@ Maybe:
         foreach ($transactionEntity->getInputs() as $inputEntity) {
             $input = array(
                 'isCoinbase' => false,
+                'nonstandard' => false,
                 'amount' => self::gmpSatoshisToFloatBTC(gmp_init($inputEntity->getValue())),
                 'scriptSig' => $inputEntity->getScriptSigAsm()
             );
@@ -721,8 +735,9 @@ Maybe:
                     'previousTxid' => $inputEntity->getRedeemedTxid(),
                     'previousTxidTruncated' => substr($inputEntity->getRedeemedTxid(), 0, 25).'...',
                     'vout' => $inputEntity->getVout(),
-                    'fromAddress' => $inputEntity->getAddress(),
-                    'type' => 'pubkey',
+                    'fromAddress' => $inputEntity->getAddress() ? $inputEntity->getAddress() : 'unknown',
+                    'type' => $inputEntity->getAddress() ? 'pubkey' : 'nonstandard',
+                    'nonstandard' => $inputEntity->getAddress() ? false : true,
                 ));
             }
 
