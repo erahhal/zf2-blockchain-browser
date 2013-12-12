@@ -71,6 +71,9 @@ class Output
      */
     private $reqSigs;
 
+    /*
+        TODO: hash160 and address duplicate data in the associated key object.  remove them
+    */
     /**
      * @ORM\Column(type="string", length=40, nullable=true)
      */
@@ -88,6 +91,10 @@ class Output
      */
     private $type;
 
+    /*
+        TODO: multisig outputs can have more than one address associated with them,
+              so this doesn't work
+    */
     /**
      * key
      *

@@ -371,16 +371,6 @@ Maybe:
                         if ($address && !$keyEntity) {
                             die("Output key entity not generated: $address\n");
                         }
-                        /*
-                        if ($txid == '00e45be5b605fdb2106afa4cef5992ee6d4e3724de5dc8b13e729a3fc3ad4b94') {
-                            if ($address == '1AbHNFdKJeVL8FRZyRZoiTzG9VCmzLrtvm') {
-                                echo $outputEntity->getKey()->getAddress()."\n";
-                                die();
-                            } else {
-                                echo "$address\n";
-                            }
-                        }
-                        */
                         $outputEntity->setHash160($hash160);
                         if (isset($output['scriptPubKey']['reqSigs'])) {
                             $outputEntity->setReqSigs($output['scriptPubKey']['reqSigs']);
