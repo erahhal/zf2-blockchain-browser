@@ -53,6 +53,7 @@ class Blockchain
         echo "
 Todo:
 
+* add Output_Key join table to support multisig, convert data, then re-import all multisig transactions
 * detect if PHP is 64-bit, if not, check if GMP is installed, otherwise us BCMath
   - ACTUALLY, just move to PHPSECLIB: http://phpseclib.sourceforge.net/math/intro.html 
 * move RPC calls into separate class
@@ -377,11 +378,10 @@ Maybe:
                         }
                         $outputEntity->setType($output['scriptPubKey']['type']);
                         if (count($output['scriptPubKey']['addresses']) > 1) {
-                            echo "output with multiple addresses found:\n";
+                            echo "\n\noutput with multiple addresses found:\n";
                             echo print_r($output, true);
-                            die();
-                        }
-                        if (isset($output['scriptPubKey']['addresses'][0]) && $address != $output['scriptPubKey']['addresses'][0]) {
+                            echo "\n";
+                        } else if (isset($output['scriptPubKey']['addresses'][0]) && $address != $output['scriptPubKey']['addresses'][0]) {
                             echo  $output['scriptPubKey']['asm']."\n";
                             die ("inconsistent output addresses\n    parsed: $address\n    given: {$output['scriptPubKey']['addresses'][0]}\n");
                         }
