@@ -1,0 +1,4 @@
+#!/bin/bash
+DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+php $DIR/../vendor/bin/doctrine-module orm:schema-tool:create "$@"

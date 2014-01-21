@@ -1,0 +1,21 @@
+{
+    "name": "zendframework/onrush",
+    "description": "Onrush Bitcoin Analysis",
+    "license": "Commercial",
+    "keywords": [
+        "framework",
+        "zf2"
+    ],
+    "homepage": "http://framework.zend.com/",
+    "require": {
+        "php": ">=5.3.3",
+        "zendframework/zendframework": "2.2.*",
+        "doctrine/doctrine-orm-module": "0.7.*",
+        "doctrine/data-fixtures": "dev-master",
+        "zendframework/zend-developer-tools": "dev-master",
+        "bjyoungblood/bjy-profiler": "dev-master",
+        "zendframework/zftool": "dev-master",
+        "facebook/xhprof": "dev-master",
+        "widmogrod/zf2-mustache-module": "dev-master"
+    }
+}

@@ -1,0 +1,240 @@
+body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+}
+
+.zf-green {
+    color: #68b604;
+}
+
+.btn-success {
+  background-color: #57a900;
+  background-image: -moz-linear-gradient(top, #70d900, #57a900);
+  background-image: -ms-linear-gradient(top, #70d900, #57a900);
+  background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#70d900), to(#57a900));
+  background-image: -webkit-linear-gradient(top, #70d900, #57a900);
+  background-image: -o-linear-gradient(top, #70d900, #57a900);
+  background-image: linear-gradient(top, #70d900, #57a900);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#70d900', endColorstr='#57a900', GradientType=0);
+}
+
+.btn-success:hover,
+.btn-success:active,
+.btn-success.active,
+.btn-success.disabled,
+.btn-success[disabled] {
+  background-color: #57a900;
+}
+
+.btn-success:active, .btn-success.active {
+  background-color: #57a900;
+}
+
+div.container a.brand {
+    background: url("../img/zf2-logo.png") no-repeat scroll 0 10px transparent;
+    margin-left: 0;
+    padding: 8px 20px 12px 40px;
+}
+
+.simpleList {
+    list-style-type: none;
+    margin-left: 0;
+    padding-left: 0;
+}
+
+.dataLabel {
+    font-weight: bold;
+    display: inline-block;
+    text-align: right;
+    margin-right: 10px;
+    width: 200px;
+}
+
+.rowEnd {
+    clear: left;
+    line-height: 0; 
+    height: 0;
+} 
+
+.blocklistRow {
+    border-bottom: 1px solid #888;
+    overflow: hidden;
+    width: 785px; 
+}
+.blocklistRow.alt {
+    background-color: blue;
+}
+.blocklistRow.header > div {
+    font-weight: bold;
+    border-top: 1px solid #888;
+}
+.blocklistRow > div {
+    height: 100%; 
+    float: left;
+}
+.blocklistRow .firstCol { 
+}
+.blocklistRow .number {
+    width: 75px;
+}
+.blocklistRow .blockhash {
+    width: 250px;
+}
+.blocklistRow .time {
+    width: 160px;
+}
+.blocklistRow .transactionCount {
+    width: 100px;
+}
+.blocklistRow .totalBTC {
+    width: 125px;
+}
+.blocklistRow .size {
+    width: 75px;
+}
+
+.txlistRow {
+    border-bottom: 1px solid #888;
+    overflow: hidden;
+    width: 1120px;
+}
+.txlistRow.alt {
+    background-color: blue;
+}
+.txlistRow.header > div {
+    font-weight: bold;
+    border-top: 1px solid #888;
+}
+.txlistRow > div {
+    height: 100%; 
+    float: left;
+}
+.txlistRow .firstCol { 
+}
+.txlistRow .transaction {
+    width: 250px;
+}
+.txlistRow .fee {
+    width: 50px;
+}
+.txlistRow .size {
+    width: 120px;
+}
+.txlistRow .from {
+    width: 350px;
+}
+.txlistRow .to {
+    width: 350px;
+}
+
+.inputlistRow {
+    border-bottom: 1px solid #888;
+    overflow: hidden;
+    width: 1100px;
+}
+.inputlistRow.alt {
+    background-color: blue;
+}
+.inputlistRow.header > div {
+    font-weight: bold;
+    border-top: 1px solid #888;
+}
+.inputlistRow > div {
+    height: 100%; 
+    float: left;
+}
+.inputlistRow .firstCol { 
+}
+.inputlistRow .prev {
+    width: 250px;
+}
+.inputlistRow .amount {
+    width: 100px;
+}
+.inputlistRow .from {
+    width: 310px;
+}
+.inputlistRow .type {
+    width: 100px;
+}
+.inputlistRow .scriptSig {
+    width: 340px;
+}
+
+.outputlistRow {
+    border-bottom: 1px solid #888;
+    overflow: hidden;
+    width: 1100px;
+}
+.outputlistRow.alt {
+    background-color: blue;
+}
+.outputlistRow.header > div {
+    font-weight: bold;
+    border-top: 1px solid #888;
+}
+.outputlistRow > div {
+    height: 100%; 
+    float: left;
+}
+.outputlistRow .firstCol { 
+}
+.outputlistRow .index {
+    width: 50px;
+}
+.outputlistRow .redeemedAt {
+    width: 200px;
+}
+.outputlistRow .amount {
+    width: 100px;
+}
+.outputlistRow .to {
+    width: 310px;
+}
+.outputlistRow .type {
+    width: 100px;
+}
+.outputlistRow .scriptPubKey {
+    width: 340px;
+}
+
+.addresstxlistRow {
+    border-bottom: 1px solid #888;
+    overflow: hidden;
+    width: 1100px;
+}
+.addresstxlistRow.alt {
+    background-color: blue;
+}
+.addresstxlistRow.header > div {
+    font-weight: bold;
+    border-top: 1px solid #888;
+}
+.addresstxlistRow > div {
+    height: 100%; 
+    float: left;
+}
+.addresstxlistRow .firstCol { 
+}
+.addresstxlistRow .transaction {
+    width: 220px;
+}
+.addresstxlistRow .block {
+    width: 250px;
+}
+.addresstxlistRow .amount {
+    width: 80px;
+}
+.addresstxlistRow .type {
+    width: 150px;
+}
+.addresstxlistRow .fromto {
+    width: 300px;
+}
+.addresstxlistRow .balance {
+    width: 100px;
+}
+
+.paginationControl {
+    margin-top: 20px;
+}

@@ -1,0 +1,58 @@
+{{#address}}
+<h1>Address {{address}}</h1>
+
+<ul class="simpleList">
+    <li><span class="dataLabel">First seen:</span> {{firstseen}}</li>
+    <li><span class="dataLabel">Received transactions:</span> {{receivedTransactions}}</li>
+    <li><span class="dataLabel">Received BTC:</span> {{receivedBTC}}</li>
+    <li><span class="dataLabel">Sent transactions:</span> {{sentTransactions}}</li>
+    <li><span class="dataLabel">Sent BTC:</span> {{sentBTC}}</li>
+    <li><span class="dataLabel">Hash160:</span> {{hash160}}</li>
+    <li><span class="dataLabel">Public key:</span> 
+    {{#pubkey}}
+        {{pubkey}}
+    {{/pubkey}}
+    {{^pubkey}}
+        Unknown (not seen yet)
+    {{/pubkey}}
+    </li>
+</ul>
+
+<h2>Ledger</h2>
+<div class="addresstxlistRow header">
+    <div class="transaction firstCol">Transaction</div>
+    <div class="block">Block</div>
+    <div class="amount">Amount</div>
+    <div class="type">Type</div>
+    <div class="fromto">From/To</div>
+    <div class="balance">Balance</div>
+</div>
+<div class="rowEnd"></div>
+{{#transactions}}
+<div class="addresstxlistRow">
+    <div class="transaction"><a href="/blockchain/transaction/{{txid}}">{{txidTruncated}}</a></div>
+    <div class="block"><a href="/blockchain/block/number/{{blocknumber}}">Block {{blocknumber}}</a> ({{blocktimeFormatted}})</div>
+    <div class="amount">{{amount}}</div>
+    <div class="type">{{txType}}: {{type}}</div>
+    <div class="fromto">
+        <ul class="simpleList">
+        {{#fromto}}
+            <li>
+            {{#isGeneration}}
+                Generation
+            {{/isGeneration}}
+            {{^isGeneration}}
+                <a href="/blockchain/address/{{address}}">{{address}}</a>
+            {{/isGeneration}}
+            </li>
+        {{/fromto}}
+        </ul>
+    </div>
+    <div class="balance">{{balance}}</div>
+</div>
+<div class="rowEnd"></div>
+{{/transactions}}
+{{/address}}
+{{^address}}
+Address not found
+{{/address}}

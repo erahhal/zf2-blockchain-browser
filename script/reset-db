@@ -1,0 +1,6 @@
+#!/bin/sh
+DIR="$( cd "$( dirname "$0" )" && pwd )"
+
+echo 'SET FOREIGN_KEY_CHECKS = 0; DROP TABLE `Key`; DROP TABLE Input; DROP TABLE Output; DROP TABLE Transaction; DROP TABLE Block; DROP TABLE User;' | mysql -u root -ps3ns89ui onrush
+$DIR/generate-tables
+$DIR/clear-doctrine-cache
